@@ -1,9 +1,10 @@
 \babel@toc {UKenglish}{}
 \beamer@sectionintoc {1}{Overview}{2}{0}{1}
-\beamer@sectionintoc {2}{Mathematics}{3}{0}{2}
-\beamer@subsectionintoc {2}{1}{Theorem}{3}{0}{2}
-\beamer@subsectionintoc {2}{2}{Example}{4}{0}{2}
-\beamer@sectionintoc {3}{Highlighting}{5}{0}{3}
-\beamer@sectionintoc {4}{Lists}{7}{0}{4}
-\beamer@sectionintoc {5}{Effects}{8}{0}{5}
-\beamer@sectionintoc {6}{References}{13}{0}{6}
+\beamer@sectionintoc {2}{Physics \& Modeling}{3}{0}{2}
+\beamer@subsectionintoc {2}{1}{Collision Modeling}{4}{0}{2}
+\beamer@subsectionintoc {2}{2}{Reactions}{6}{0}{2}
+\beamer@sectionintoc {3}{Results}{8}{0}{3}
+\beamer@subsectionintoc {3}{1}{$C$ \& $O$}{10}{0}{3}
+\beamer@subsectionintoc {3}{2}{$C$, $O$, $N$ \& $e^{-}$}{12}{0}{3}
+\beamer@subsectionintoc {3}{3}{$C$ \& $O$ vs $C$, $O$, $N$ \& $e^{-}$}{14}{0}{3}
+\beamer@sectionintoc {4}{References}{20}{0}{4}
