@@ -4,7 +4,7 @@ This project simulates the **Schiapparelli** capsule descend on Mars.
 
 The descend has been modeled using **SPARTA** code. 
 
-## Simulation
+## Simulations
 
 The simulated cases are the following:
 
