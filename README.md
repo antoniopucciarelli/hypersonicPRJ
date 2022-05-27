@@ -1,6 +1,6 @@
 # hypersonicPRJ
 
-This project simulates the **Schiapparelli** capsule descend on Mars. 
+This project simulates the **Orion** capsule descend on Mars. 
 
 The descend has been modeled using **SPARTA** code. 
 
