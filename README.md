@@ -1,17 +1,18 @@
 # hypersonicPRJ
 
-This project simulates the **Schiapparelli** descend on Mars. 
+This project simulates the **Orion** capsule descend on Mars. 
 
 The descend has been modeled using **SPARTA** code. 
 
-## Simulation
+## Simulations
 
 The simulated cases are the following:
 
 | Case 		| Mesh 	| Description  					| Output 						   |
 |---		|--- 	|---						|---							   |
-| basicCase     | 3D	| C \& O based molecules simulation 	| C<sub>L</sub> \& C<sub>D</sub> analysis with respect to Kn and AOA |
-| extendedCase	| 3D	| C, O, N \& e<sup>-</sup> based molecules simlation 	| C<sub>L</sub> \& C<sub>D</sub> analysis with respect to Kn and AOA |
+| aeroCoeffCase | 3D	| C \& O based molecules simulation without reactions	| C<sub>L</sub> \& C<sub>D</sub> analysis with respect to Mach, Knundsen and AOA |
+| basicReactiveCase     | 2D	| C \& O based molecules simulation with reactions	                | Flow study |
+| extendedReactiveCase	| 2D	| C, O, N \& e<sup>-</sup> based molecules simlation with reactions	| Flow study |
 
-The results of the simulation are summed up on these slides.
+The results of the simulation are summed up on [these slides](https://github.com/antoniopucciarelli/hypersonicPRJ/blob/main/latex/main.pdf).
 
