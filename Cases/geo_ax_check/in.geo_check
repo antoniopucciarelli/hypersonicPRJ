@@ -1,0 +1,109 @@
+# Free-molecular flat plate
+
+# Seed for the Pseudo Random Number Generator
+# ###########################################
+ 
+seed 12345 
+
+# 2D simulation
+# #############
+
+dimension 2
+
+# For parallelization (for the moment not important)
+# ##################################################
+
+global gridcut 0.0 comm/sort yes 
+
+# Boundary conditions
+# "o" open , "p" periodic, "r" specular reflection, "a" axi-symmetric
+# Xmin_bc, Xmax_bc  Ymin_bc, Ymax_bc  Zmin_bc, Zmax_bc
+# ###################################################################
+
+boundary o ar p
+
+# Create SPARTA simulation domain
+# Xmin, Xmax  Ymin, Ymax  Zmin, Zmax
+# ##################################
+
+create_box -5.0 5.0 0.0 10.0 -0.5 0.5
+
+# Number of cells, only 1 along z
+# ###############################
+
+create_grid 30 20 1 
+
+# Number density (depending on the altitude) and fnum (set fnum to have the required number of particles)
+# #######################################################################################################
+
+balance_grid rcb cell
+
+global nrho 2.589E18 fnum 8.1506E16 weight cell radius
+
+# Define a gas species (reads the argon.species file)
+# ###################################################
+
+species argon.species Ar 
+
+# Free-stream velocity and temperature
+# ####################################
+
+mixture argon Ar vstream 6593.228 0.0 0.0 temp 200.0 
+
+# No gas-phase collisions
+# #######################
+
+collide none
+
+# Import geometry
+# ###############
+
+read_surf data.simple_orion_ax clip
+
+# Create a gas-surface collision type and give it the ID = 1
+# ##########################################################
+
+surf_collide 1 diffuse 1500.0 1.0
+
+# Assign collisions to surfaces
+# #############################
+
+surf_modify all collide 1
+
+# Inject gas from Xmin surface
+# ############################
+
+fix fixInjectArgon emit/face argon xlo
+
+# Timestep (not critical in this free molecular simulation)
+# #########################################################
+
+timestep 1.0E-7 # [s]
+
+# Save dump figures (not important at this stage)
+# ###############################################
+
+dump dumpfig image all 100 image.*.ppm type type pdiam 0.05 &
+     surf proc 0.01 size 512 512 gline no 0.005
+
+# Print stats each N timesteps 
+# ############################
+
+stats        100
+
+# step     = timestep
+# cpu      = elapsed CPU time in seconds within a run
+# np       = number of particles (this step)
+# nscoll   = number of surface collisions (this step)
+# ncoll    = number of particle/particle collisions (this step)
+# nattempt = number of attempted collisions (this step)
+# #############################################################
+
+stats_style  step cpu  np  nattempt  ncoll  nscoll  
+
+# Run simulation for N timesteps
+# ##############################
+
+run 50000
+
+
