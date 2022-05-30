@@ -1,0 +1,6 @@
+dimension 2
+create_box   -3.0 0.0 0.0 2.5 -0.0005 0.0005
+
+read_grid    ../GRID/parent_grid
+
+

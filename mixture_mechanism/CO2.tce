@@ -1,0 +1,128 @@
+# CO2 reactions (partly taken from SACOMAR)
+# NOTE: If used for real-world applications, this set of reactions should be carefully
+# analized. At the moment, it contains some simplifications. But for the project (exam), 
+# this already contains a good amount of detail.
+#
+# If you spot some error or want to share a better model, please let us know at:
+# federico.bariselli@gmail.com
+# stefano.boccelli@gmail.com
+
+# ------ Reaction 1) CO2 + M --> CO + O + M --------
+
+CO2 + CO2 --> CO + O + CO2
+D A 1.0 8.732e-19 1.145e-8 -1.5 -8.732e-19
+
+CO2 + CO  --> CO + O + CO
+D A 1.0 8.732e-19 1.145e-8 -1.5 -8.732e-19
+
+CO2 + O2  --> CO + O + O2
+D A 1.0 8.732e-19 1.145e-8 -1.5 -8.732e-19
+
+CO2 + C2  --> CO + O + C2
+D A 1.0 8.732e-19 1.145e-8 -1.5 -8.732e-19
+
+# ------- Reaction 2) CO2 + A --> CO + O + A ---------
+
+CO2 + O  --> CO + O + O
+D A 1.0 8.732e-19 2.324e-8 -1.5 -8.732e-19
+
+CO2 + C  --> CO + O + O
+D A 1.0 8.732e-19 2.324e-8 -1.5 -8.732e-19
+
+# -------- Reaction 3) C2 + M/A --> C + C + M/A ----------
+
+C2 + CO2 --> C + C + CO2
+D A 1.0 9.88e-19 2.49e-14 0.0 -9.88e-19
+
+C2 + CO --> C + C + CO
+D A 1.0 9.88e-19 2.49e-14 0.0 -9.88e-19
+
+C2 + C2 --> C + C + C2
+D A 1.0 9.88e-19 2.49e-14 0.0 -9.88e-19
+
+C2 + O2 --> C + C + O2
+D A 1.0 9.88e-19 2.49e-14 0.0 -9.88e-19
+
+C2 + C --> C + C + C
+D A 1.0 9.88e-19 2.49e-14 0.0 -9.88e-19
+
+C2 + O --> C + C + O
+D A 1.0 9.88e-19 2.49e-14 0.0 -9.88e-19
+
+# -------- Reaction 4) CO + M --> C + O + M ----------
+
+CO + CO2 --> C + O + CO2
+D A 1.0 1.78e-18 3.82e-10 -1.0 -1.78e-18
+
+CO + CO --> C + O + CO
+D A 1.0 1.78e-18 3.82e-10 -1.0 -1.78e-18
+
+CO + C2 --> C + O + C2
+D A 1.0 1.78e-18 3.82e-10 -1.0 -1.78e-18
+
+CO + O2 --> C + O + O2
+D A 1.0 1.78e-18 3.82e-10 -1.0 -1.78e-18
+
+# --------- Reaction 5) CO + A --> C + O + A ---------
+
+CO + O --> C + O + O
+D A 1.0 1.78e-18 5.64e-10 -1.0 -1.78e-18
+
+CO + C --> C + O + C
+D A 1.0 1.78e-18 5.64e-10 -1.0 -1.78e-18
+
+# --------- Reaction 6) O2 + M --> O + O + M ---------
+
+O2 + CO2 --> O + O + CO2
+D A 1.0 8.245e-19 3.321e-9 -1.5 -8.245e-19
+
+O2 + CO --> O + O + CO
+D A 1.0 8.245e-19 3.321e-9 -1.5 -8.245e-19
+
+O2 + O2 --> O + O + O2
+D A 1.0 8.245e-19 3.321e-9 -1.5 -8.245e-19
+
+O2 + C2 --> O + O + C2
+D A 1.0 8.245e-19 3.321e-9 -1.5 -8.245e-19
+
+# --------- Reaction 7) O2 + A --> O + O + A -----------
+
+O2 + O --> O + O + O
+D A 1.0 8.245e-19 1.66e-8 -1.5 -8.245e-19
+
+O2 + C --> O + O + C
+D A 1.0 8.245e-19 1.66e-8 -1.5 -8.245e-19
+
+# ---------- Reaction 8) CO + O -> C + O2 --------------
+
+CO + O --> C + O2
+E A 0.0 9.55e-19 6.476e-17 -0.18 -9.55e-19 
+
+# Inverse reaction (NOT NECESSARILY CONSISTENT! TAKEN FROM: Chemical kinetics study
+# in rarefied Martian atmosphere using quantum kinetics model...)
+
+C + O2 --> CO + O
+E A 0.0 9.55e-19 3.32e-17 0.0 9.55e-19
+
+# # ---------- Reaction 9) CO + C -> C2 + O --------------
+# NEGLECT REACTION 9
+# 
+# CO + C --> C2 + O
+# E A 0.0 8.0e-19 3.32e-13 -1.0 -8.0e-19
+# # Inverse reaction
+# C2 + O --> CO + C
+# AAAAAAAAAAAAAAAAAAAAAAA
+# AAAAAAAAAAAAAAAAAAAAAAA
+# 
+
+# ----------- Reaction 10) CO2 + O --> CO + O2 ---------
+
+CO2 + O --> CO + O2
+E A 0.0 3.84e-19 3.487e-17 0.0 -3.84e-19
+
+# Neglect the inverse reaction for simplicity
+# # Inverse reaction
+# CO + O2 --> CO2 + O
+# AAAAAAAAAAAAAAAAAAAAAAAA
+# AAAAAAAAAAAAAAAAAAAAAAAA
+

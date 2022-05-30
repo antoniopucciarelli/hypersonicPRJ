@@ -1,0 +1,208 @@
+# Chemically reacting flow around a cylinder
+
+# Define variables
+# ################
+
+variable         x_min  equal  -5.0     # [m]
+variable         x_max  equal   5.0     # [m]
+variable         y_min  equal   0.0     # [m]
+variable         y_max  equal   2.5     # [m]
+variable         z_min  equal  -0.0005  # [m] 
+variable         z_max  equal   0.0005  # [m]
+
+variable         Nx     equal  30
+variable         Ny     equal  25
+
+variable         Fnum   equal  1.5e16
+
+variable         n_FS   equal  2.0E20  # [1/m3]
+variable         Vx_FS  equal  5000.0  # [m/s]
+variable         Vy_FS  equal  0.0     # [m/s]
+variable         T_FS   equal  300.0   # [K]
+
+variable         T_w    equal  1000.0  # [K]
+variable         a_w    equal  1.0
+
+variable         dt     equal   1.0e-6  # [s]
+
+# Initialization
+# ##############
+
+seed             12345
+dimension        2
+units            si
+global           gridcut 0.0 comm/sort yes
+
+# Create grid and read surface 
+# ############################
+
+boundary         oo ao pp
+
+create_box       ${x_min} ${x_max} ${y_min} ${y_max} ${z_min} ${z_max}
+create_grid      ${Nx} ${Ny} 1
+
+# Load balancing (multi-thread simulation, MPI)
+# keyword "part", then the weight for each grid cell 
+# is the number of particles it currently owns, so that each processor 
+# will end up with an equal number of particles
+# #################################################################### 
+
+balance_grid     rcb part 
+fix              loadbalance balance 1000 1.1 rcb part
+
+# Numerical settings
+# ##################
+
+global           fnum ${Fnum}
+timestep         ${dt}
+
+# Define species and mixtures (CO2. No ionization)
+# #######################################################################
+
+species          CO2.species CO2 O2 C2 CO O C
+
+mixture          CO2 CO2 O2 C2 CO O C vstream ${Vx_FS} ${Vy_FS} 0.0 temp ${T_FS} nrho ${n_FS}
+mixture          CO2 CO2 frac 1.0 # molar fraction of CO2
+mixture          CO2 O2  frac 0.0
+mixture          CO2 C2  frac 0.0 
+mixture          CO2 CO  frac 0.0     
+mixture          CO2 O   frac 0.0
+mixture          CO2 C   frac 0.0     
+
+mixture          m_CO2  CO2
+mixture          m_O2   O2
+mixture          m_C2   C2
+mixture          m_CO   CO
+mixture          m_O    O
+mixture          m_C    C
+
+# Import surface and set up gas surface interactions 
+# ##################################################
+
+read_surf        data.simpe_orion_ax
+surf_collide     scoll diffuse ${T_w} ${a_w}
+surf_modify      all collide scoll
+
+# Set up gas phase interactions
+# #############################
+
+collide          vss CO2 CO2.vss
+collide_modify   vibrate smooth
+#no chemical reaction here
+#react            tce air.tce
+
+# Emit particles from global boundary -> axisym no from ylo
+# ###################################
+
+fix              in emit/face air xlo yhi 
+
+# Seed particles uniformly in the domain
+# ######################################
+
+create_particles CO2 n 0
+
+# Tailor output
+# #############
+
+compute          ntot     count                  CO2 O2 C2 CO O C
+stats            100
+stats_style      step cpu np nattempt ncoll nscoll nscheck c_ntot[*]
+              
+# Run transitory
+# ##############
+
+run              10000
+
+# OPTION 1. Adapt grid on the fly (based on the particle number in each cell)
+# We have to check a posteriori that the local cell-based Knudsen number is OK
+# ############################################################################
+
+#compute          nrho      grid            all   air    nrho
+#compute          temp_tra  thermal/grid    all   air    temp
+
+#fix              adaptgrid adapt 500 all refine particle 50 1
+
+#run              3000
+
+#unfix            adaptgrid
+
+# OPTION 2. Adapt grid on the fly (based on the local Knudsen number)
+# We have to check a posteriori that the number of particles in each cell is OK
+# #############################################################################
+
+compute          nrho      grid            all   CO2    nrho
+compute          temp_tra  thermal/grid    all   CO2    temp
+
+fix              avg_nrho        ave/grid   all  10 100 1000 c_nrho[*]         ave one
+fix              avg_temp_tra    ave/grid   all  10 100 1000 c_temp_tra[*]     ave one
+
+compute          mfp       lambda/grid     f_avg_nrho[*] f_avg_temp_tra[*] CO2 kall
+fix              avg_mfp   ave/grid        all  1 1 1000 c_mfp[*] ave one
+
+fix              adaptgrid adapt 1000 all refine coarsen value f_avg_mfp[2] 0.2 0.9 thresh less more #maxlevel 20
+
+run              3000
+
+unfix            avg_nrho
+unfix            avg_temp_tra
+unfix            avg_mfp
+unfix            adaptgrid
+
+# Specify what to dump
+# ####################
+
+compute          n         grid            all   CO2    n
+#compute          nrho      grid            all   air    nrho
+compute          vel       grid            all   CO2    u v w
+#compute          temp_tra  thermal/grid    all   air    temp
+compute          temp_rot  grid            all   CO2    trot
+compute          temp_vib  grid            all   CO2    tvib
+
+compute          nrho_CO2   grid            all   m_CO2    nrho
+compute          nrho_O2   grid            all   m_O2    nrho
+compute          nrho_C2    grid            all   m_C2     nrho
+compute          nrho_CO    grid            all   m_CO     nrho
+compute          nrho_O   grid            all   m_O    nrho
+compute          nrho_C   grid            all   m_C    nrho
+
+compute          pressure  surf            all   CO2     press px py pz
+compute          shear     surf            all   CO2     shx shy shz
+compute          heat_flux surf            all   CO2     etot
+
+fix              avg_n           ave/grid   all  10 100 1000 c_n[*]            ave running
+fix              avg_nrho        ave/grid   all  10 100 1000 c_nrho[*]         ave running
+fix              avg_vel         ave/grid   all  10 100 1000 c_vel[*]          ave running
+fix              avg_temp_tra    ave/grid   all  10 100 1000 c_temp_tra[*]     ave running
+fix              avg_temp_rot    ave/grid   all  10 100 1000 c_temp_rot[*]     ave running
+fix              avg_temp_vib    ave/grid   all  10 100 1000 c_temp_vib[*]     ave running
+
+fix              avg_nrho_CO2        ave/grid   all  10 100 1000 c_nrho_CO2[*]   ave running
+fix              avg_nrho_O2        ave/grid   all  10 100 1000 c_nrho_O2[*]   ave running
+fix              avg_nrho_C2         ave/grid   all  10 100 1000 c_nrho_C2[*]    ave running
+fix              avg_nrho_CO         ave/grid   all  10 100 1000 c_nrho_CO[*]    ave running
+fix              avg_nrho_O        ave/grid   all  10 100 1000 c_nrho_O[*]   ave running
+fix              avg_nrho_C        ave/grid   all  10 100 1000 c_nrho_C[*]   ave running
+
+fix              avg_pressure       ave/surf   all  10 100 1000 c_pressure[*]  ave running
+fix              avg_shear          ave/surf   all  10 100 1000 c_shear[*]     ave running
+fix              avg_heat_flux      ave/surf   all  10 100 1000 c_heat_flux[*] ave running
+
+# Save grid and dump files 
+# ########################
+
+shell            mkdir GRID
+write_grid       ./GRID/parent_grid
+
+shell            mkdir DUMP
+
+dump             dumpall  grid   all  1000 ./DUMP/flow_field.* id proc f_avg_n f_avg_nrho &
+                 f_avg_temp_tra  f_avg_temp_rot  f_avg_temp_vib  f_avg_vel[*]  &
+                 f_avg_nrho_CO2   f_avg_nrho_O2   f_avg_nrho_C2    f_avg_nrho_CO  f_avg_nrho_O f_avg_nrho_C
+
+dump             dumpSurf surf   all  1000 ./DUMP/surf_heat_flux.* id & 
+                 f_avg_pressure[*] f_avg_shear[*] f_avg_heat_flux[*] 
+
+# Run steady state
+# ################
+
+run              10000

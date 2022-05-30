@@ -20,7 +20,7 @@ global gridcut 0.0 comm/sort yes
 # Xmin_bc, Xmax_bc  Ymin_bc, Ymax_bc  Zmin_bc, Zmax_bc
 # ###################################################################
 
-boundary o ar p
+boundary o ao p
 
 # Create SPARTA simulation domain
 # Xmin, Xmax  Ymin, Ymax  Zmin, Zmax

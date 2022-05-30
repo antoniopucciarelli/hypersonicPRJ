@@ -69,3 +69,5 @@ f.write(str(len(xx)) + " " + str(len(xx)) + " " + str(1) + "\n")
 
 f.close()
 
+print("Capsule radius : " + str(max(yy)))
+print("Capsule length : " + str(max(xx)))
