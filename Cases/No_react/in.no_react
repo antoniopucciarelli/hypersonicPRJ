@@ -53,21 +53,21 @@ fix              loadbalance balance 1000 1.1 rcb part
 # Numerical settings
 # ##################
 
-global           fnum ${Fnum}
+global           fnum ${Fnum} weight cell radius
 timestep         ${dt}
 
 # Define species and mixtures (CO2. No ionization)
 # #######################################################################
 
-species          CO2.species CO2 O2 C2 CO O C
+species          Mair.species CO2 O2 C2 CO O C
 
-mixture          CO2 CO2 O2 C2 CO O C vstream ${Vx_FS} ${Vy_FS} 0.0 temp ${T_FS} nrho ${n_FS}
-mixture          CO2 CO2 frac 1.0 # molar fraction of CO2
-mixture          CO2 O2  frac 0.0
-mixture          CO2 C2  frac 0.0 
-mixture          CO2 CO  frac 0.0     
-mixture          CO2 O   frac 0.0
-mixture          CO2 C   frac 0.0     
+mixture          Mair CO2 O2 C2 CO O C vstream ${Vx_FS} ${Vy_FS} 0.0 temp ${T_FS} nrho ${n_FS}
+mixture          Mair CO2 frac 1.0 # molar fraction of CO2
+mixture          Mair O2  frac 0.0
+mixture          Mair C2  frac 0.0 
+mixture          Mair CO  frac 0.0     
+mixture          Mair O   frac 0.0
+mixture          Mair C   frac 0.0     
 
 mixture          m_CO2  CO2
 mixture          m_O2   O2
@@ -79,14 +79,14 @@ mixture          m_C    C
 # Import surface and set up gas surface interactions 
 # ##################################################
 
-read_surf        data.simpe_orion_ax
+read_surf        data.simple_orion_ax clip
 surf_collide     scoll diffuse ${T_w} ${a_w}
 surf_modify      all collide scoll
 
 # Set up gas phase interactions
 # #############################
 
-collide          vss CO2 CO2.vss
+collide          vss Mair Mair.vss
 collide_modify   vibrate smooth
 #no chemical reaction here
 #react            tce air.tce
@@ -94,12 +94,12 @@ collide_modify   vibrate smooth
 # Emit particles from global boundary -> axisym no from ylo
 # ###################################
 
-fix              in emit/face air xlo yhi 
+fix              in emit/face Mair xlo yhi 
 
 # Seed particles uniformly in the domain
 # ######################################
 
-create_particles CO2 n 0
+create_particles Mair n 0
 
 # Tailor output
 # #############
@@ -130,8 +130,8 @@ run              10000
 # We have to check a posteriori that the number of particles in each cell is OK
 # #############################################################################
 
-compute          nrho      grid            all   CO2    nrho
-compute          temp_tra  thermal/grid    all   CO2    temp
+compute          nrho      grid            all   Mair    nrho
+compute          temp_tra  thermal/grid    all   Mair    temp
 
 fix              avg_nrho        ave/grid   all  10 100 1000 c_nrho[*]         ave one
 fix              avg_temp_tra    ave/grid   all  10 100 1000 c_temp_tra[*]     ave one
@@ -151,12 +151,12 @@ unfix            adaptgrid
 # Specify what to dump
 # ####################
 
-compute          n         grid            all   CO2    n
+compute          n         grid            all   Mair    n
 #compute          nrho      grid            all   air    nrho
-compute          vel       grid            all   CO2    u v w
+compute          vel       grid            all   Mair    u v w
 #compute          temp_tra  thermal/grid    all   air    temp
-compute          temp_rot  grid            all   CO2    trot
-compute          temp_vib  grid            all   CO2    tvib
+compute          temp_rot  grid            all   Mair    trot
+compute          temp_vib  grid            all   Mair    tvib
 
 compute          nrho_CO2   grid            all   m_CO2    nrho
 compute          nrho_O2   grid            all   m_O2    nrho
@@ -165,9 +165,9 @@ compute          nrho_CO    grid            all   m_CO     nrho
 compute          nrho_O   grid            all   m_O    nrho
 compute          nrho_C   grid            all   m_C    nrho
 
-compute          pressure  surf            all   CO2     press px py pz
-compute          shear     surf            all   CO2     shx shy shz
-compute          heat_flux surf            all   CO2     etot
+compute          pressure  surf            all   Mair     press px py pz
+compute          shear     surf            all   Mair     shx shy shz
+compute          heat_flux surf            all   Mair     etot
 
 fix              avg_n           ave/grid   all  10 100 1000 c_n[*]            ave running
 fix              avg_nrho        ave/grid   all  10 100 1000 c_nrho[*]         ave running
