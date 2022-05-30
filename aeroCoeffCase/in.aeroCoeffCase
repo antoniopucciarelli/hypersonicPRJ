@@ -1,0 +1,84 @@
+# seed generation
+seed 12345
+
+# 3D simulation
+dimension 3
+
+# global settings declaration
+global surfmax 100000
+global splitmax 15
+global gridcut 0.1 comm/sort yes 
+
+# boundary conditions
+boundary oo oo oo
+
+# Xmin, Xmax  Ymin, Ymax  Zmin, Zmax
+create_box -10 10 -10 10 -10 10
+
+# Number of cells, only 1 along z
+create_grid 200 100 100
+
+# setting parallel run 
+balance_grid rcb cell
+
+# Number density (depending on the altitude) and fnum (set fnum to have the required number of particles)
+global nrho 5.84E15 fnum 1E15
+
+# Define a gas species (reads the air.species file)
+species air.species N2
+
+# Free-stream velocity and temperature
+mixture nitrogen N2 vstream 8000.0 0.0 0.0 temp 850 
+
+# No gas-phase collisions
+collide none
+
+# Import geometry
+read_surf data.orionSimple origin 0.0 0.0 0.0 rotate 180 0 0 1
+
+# Create a gas-surface collision type and give it the ID = 1
+surf_collide 1 specular
+
+# Assign collisions to surfaces
+surf_modify all collide 1
+
+# Inject gas from Xmin surface
+fix fixInject emit/face nitrogen xlo ylo yhi
+
+# timestep (not critical in this free molecular simulation)
+timestep 5.0E-7 # [s]
+
+# computing quantities of interest
+compute n grid all nitrogen n
+
+# print stats each N timesteps 
+stats 100
+
+# step     = timestep
+# cpu      = elapsed CPU time in seconds within a run
+# np       = number of particles (this step)
+# nscoll   = number of surface collisions (this step)
+# ncoll    = number of particle/particle collisions (this step)
+# nattempt = number of attempted collisions (this step)
+stats_style step cpu np nattempt ncoll 
+
+# run simulation
+run 500
+
+# grid adaptation
+fix adaptgrid adapt 500 all refine particle 50 1
+
+# run simulation after grid refinement
+run 500
+
+# saving grid 
+shell mkdir grid
+write_grid ./grid/gridOrionSimple
+
+# saving data
+shell mkdir images
+dump dumpfig image all 100 images/image.*.ppm type type pdiam 0.04 &
+     surf proc 0.01 size 512 512 gline no 0.005 
+
+# run simulation 
+run 1500
