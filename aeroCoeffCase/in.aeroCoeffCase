@@ -25,13 +25,18 @@ balance_grid rcb cell
 global nrho 5.84E15 fnum 1E15
 
 # define a gas species 
-species air.species N2
+species Mair.species CO2 N2
 
 # free-stream velocity and temperature
-mixture nitrogen N2 vstream 8000.0 0.0 0.0 temp 850 
+mixture Mair CO2 N2 vstream 8000.0 0.0 0.0 temp 850 
+mixture Mair CO2 frac 0.97 #RAF: here should be the molar fraction
+                           #0.97 in the paper was the mass fraction
+mixture Mair N2  frac 0.03 
 
 # no gas-phase collisions
 collide none
+#collide            vss Mair Mair.vss
+#collide_modify     vibrate smooth
 
 # import geometry
 read_surf data.orionSimple origin 0.0 0.0 0.0 rotate 180 0 0 1
@@ -43,7 +48,7 @@ surf_collide 1 specular
 surf_modify all collide 1
 
 # inject gas from Xmin surface
-fix fixInject emit/face nitrogen xlo ylo yhi
+fix fixInject emit/face Mair xlo ylo yhi
 
 # timestep (not critical in this free molecular simulation)
 timestep 5.0E-7 # [s]
@@ -84,10 +89,10 @@ compute fxTOT reduce sum f_fxAVE[*]
 compute fzTOT reduce sum f_fzAVE[*]
 
 # saving data
-compute n         grid          all nitrogen n
-compute nrho      grid          all nitrogen nrho
-compute velocity  grid          all nitrogen u v w
-compute temp_tra  thermal/grid  all nitrogen temp
+compute n         grid          all Mair n
+compute nrho      grid          all Mair nrho
+compute velocity  grid          all Mair u v w
+compute temp_tra  thermal/grid  all Mair temp
 
 fix avg_n         ave/grid all  1 10 100 c_n[*]        ave running
 fix avg_nrho      ave/grid all  1 10 100 c_nrho[*]     ave running
