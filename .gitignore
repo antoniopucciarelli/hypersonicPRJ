@@ -1,3 +1,4 @@
-*.ppm
+dump/
+*.vtu
 
 /Cases/No_react/spa_mpi
