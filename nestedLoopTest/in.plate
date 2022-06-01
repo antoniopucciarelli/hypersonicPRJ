@@ -1,0 +1,171 @@
+# Free-molecular flat plate - compute forces
+variable	nKnudsen	equal	10
+variable	nMach		equal	10
+variable	nAOA		equal	10
+
+variable	gammaMixture	equal	5/3
+variable	boltzConstant	equal   1.38E-23
+
+variable	minMach		equal	10
+variable	maxMach		equal	25
+
+variable	minKnudsen	equal	0.25
+variable	maxKnudsen	equal	0.5
+
+variable	minAOA		equal	0
+variable	maxAOA		equal	30
+
+variable	Tflow		equal	300
+
+variable	N2mass		equal	4.65E-26	
+variable	N2diameter	equal	4.17E-10
+
+variable	Wp		equal	100
+
+variable	L		equal 	1
+variable	Nlam		equal	4
+variable	Ntau		equal	4
+
+variable	xMin		equal	-2
+variable 	xMax		equal 	1
+variable 	yMin		equal	-1
+variable	yMax		equal	2
+variable	zMin		equal	-0.5
+variable	zMax		equal	0.5
+
+variable iK loop ${nKnudsen} 
+
+	label 		loopLabelKnudsen
+	
+	variable iM loop ${nMach}
+		
+		label	loopLabelMach
+
+			variable iA loop ${nAOA} 
+			
+				label		loopLabelAOA
+
+				print " "
+				print "---------------------------------------"
+				print "--- loop No. = ${iK} --- *Knudsen* ---"
+				print "--- loop No. = ${iM} ---   *Ma*    ---"
+				print "--- loop No. = ${iA} ---   *AOA*   ---"
+				print "---------------------------------------"
+				print " " 
+
+				seed            12345
+				
+				dimension       2
+				
+				global          gridcut 0.1 comm/sort yes 
+				
+				boundary        oo oo pp
+				
+				variable 	thetaAngle 	equal 	${iA}*5
+				variable	cSpeed		equal	sqrt(${gammaMixture}*${boltzConstant}/${N2mass}*${Tflow})
+				variable	MachNumber	equal	${minMach}+(${maxMach}-${minMach})/${nMach}*${iM}
+				variable	Uflow		equal	${MachNumber}*${cSpeed}
+				variable	KnudsenNumber	equal 	${minKnudsen}+(${maxKnudsen}-${minKnudsen})/${nKnudsen}*${iK}
+				variable	numberDensity	equal	1.0/(${KnudsenNumber}*${L}*PI*${N2diameter}^2)
+				variable	numberSimulated equal 	${numberDensity}/${Wp}
+				variable	numberDensityPS equal   (${gammaMixture}+1)/(${gammaMixture}-1)*${numberDensity}
+				variable	numberSimulatedPS equal ${numberDensityPS}/${Wp}
+				variable	TflowPS		equal	${numberDensity}/${numberDensityPS}*${Uflow}^2/(3*${boltzConstant}/${N2mass})
+				variable	meanFreePathPS 	equal	1.0/(sqrt(2)*${numberDensityPS}*PI*${N2diameter}^2)
+				variable	thermalSpeed	equal	sqrt((8*${boltzConstant}*${TflowPS})/(PI*${N2mass}))
+				variable	timeInterval	equal	1.0/(${numberDensityPS}*PI*${N2diameter}^2*${thermalSpeed})
+				variable	dt		equal 	${timeInterval}/${Ntau}  
+				variable	ds 		equal 	${meanFreePathPS}/${Nlam}
+				variable	xNcells		equal	round((${xMax}-${xMin})/${ds})	
+				variable	yNcells		equal   round((${yMax}-${yMin})/${ds})
+
+				# printing values
+				print " "
+				print "--- AOA                           = ${thetaAngle}"
+				print "--- sound speed                   = ${cSpeed}"
+				print "--- Mach number	                  = ${MachNumber}"
+				print "--- Knudsen number                = ${KnudsenNumber}"
+				print "--- flow speed                    = ${Uflow}"
+				print "--- number density    *PRE-SHOCK* = ${numberDensity}"
+				print "--- number simulated  *PRE-SHOCK* = ${numberSimulated}"
+				print "--- number density   *POST-SHOCK* = ${numberDensityPS}"
+				print "--- number simulated *POST-SHOCK* = ${numberSimulatedPS}"
+				print "--- flow temperature *POST-SHOCK* = ${TflowPS}"
+				print "--- mean free path   *POST-SHOCK* = ${meanFreePathPS}"
+				print "--- thermal speed	          = ${thermalSpeed}"
+				print "--- collision time interval       = ${timeInterval}"
+				print "--- ds				  = ${ds}"
+				print "--- dt				  = ${dt}"
+				print "--- X cells			  = ${xNcells}"
+				print "--- Y cells			  = ${yNcells}"
+				print " "
+
+				create_box      ${xMin} ${xMax} ${yMin} ${yMax} ${zMin} ${zMax}
+				
+				create_grid     ${xNcells} ${yNcells} 1
+				
+				balance_grid    rcb part
+				
+				fix             loadbalance balance 1000 1.1 rcb part
+				
+				global          nrho ${numberDensity} fnum ${numberSimulated}
+				
+				species         air.species N2
+				
+				mixture         nitrogen N2 vstream ${Uflow} 0.0 0.0 temp ${Tflow} 
+				
+				collide         none
+				
+				read_surf       data.flat_plate origin 0.0 0.0 0.0 rotate ${thetaAngle} 0 0 1
+				
+				surf_collide    1 specular
+				
+				surf_modify     all collide 1
+				
+				fix fixInject   emit/face nitrogen xlo ylo yhi
+				
+				timestep        ${dt}
+				
+				compute         fx surf all all fx
+				
+				fix             fxAVE ave/surf all 1 10 100 c_fx[*] ave one
+				
+				compute         fxTOT reduce sum f_fxAVE[*]
+				
+				stats           100
+				
+				stats_style     step cpu np nattempt ncoll nscoll c_fxTOT
+				
+				shell 		mkdir dump
+				shell 		mkdir dump/Kn${KnudsenNumber}
+				shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}
+				shell 		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}
+				shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/force
+				shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/forceAverage
+				shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/forceTotal
+				
+				dump		dataDumpForce 		surf all 100 ./dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/force/xForce.* 			c_fx[*] 
+				dump 		dataDumpForceAverage 	surf all 100 ./dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/forceAverage/xFroceAverage.* 	f_fxAVE[*]
+				
+				run             200
+				
+				undump		dataDumpForce 
+				undump		dataDumpForceAverage
+				
+				clear
+				
+				next 		iA 
+				
+				jump 		SELF loopLabelAOA
+	
+			next iM
+			
+			jump 	SELF loopLabelMach
+
+		next iK
+
+		jump 	SELF	loopLabelKnudsen
+
+print " "
+print "*** end of simulation ***"
+print " " 
