@@ -22,10 +22,10 @@ variable	N2diameter	equal	4.17E-10
 
 variable	Wp		equal	100
 
-variable	L		equal 	1
 variable	Nlam		equal	4
 variable	Ntau		equal	4
 
+variable	L		equal 	1
 variable	xMin		equal	-2
 variable 	xMax		equal 	1
 variable 	yMin		equal	-1
@@ -110,19 +110,23 @@ variable iK loop ${nKnudsen}
 				
 				global          nrho ${numberDensity} fnum ${numberSimulated}
 				
-				species         air.species N2
+				species         collisionProperties/marsAtmosphere.species CO2 N2
 				
-				mixture         nitrogen N2 vstream ${Uflow} 0.0 0.0 temp ${Tflow} 
+				mixture         atmoMars CO2 N2 vstream ${Uflow} 0.0 0.0 temp ${Tflow} 
+				mixture		atmoMars CO2 	frac 0.97
+				mixture		atmoMars N2  	frac 0.03
+
+				read_surf       geometry/data.plate origin 0.0 0.0 0.0 rotate ${thetaAngle} 0 0 1
 				
-				collide         none
+				surf_collide    surfCollision diffuse 1500.0 1.0
+				surf_modify     all collide surfCollision
 				
-				read_surf       data.flat_plate origin 0.0 0.0 0.0 rotate ${thetaAngle} 0 0 1
+				collide 	vss atmoMars collisionProperties/marsAtmosphere.vss
+				collide_modify	vibrate smooth
 				
-				surf_collide    1 specular
-				
-				surf_modify     all collide 1
-				
-				fix fixInject   emit/face nitrogen xlo ylo yhi
+				react		none
+
+				fix fixInject   emit/face atmoMars xlo ylo yhi
 				
 				timestep        ${dt}
 				
@@ -167,5 +171,6 @@ variable iK loop ${nKnudsen}
 		jump 	SELF	loopLabelKnudsen
 
 print " "
-print "*** end of simulation ***"
+variable totSimulation equal ${nKnudsen}*${nMach}*${nAOA}
+print "*** end of ${totSimulation} simulations ***"
 print " " 
