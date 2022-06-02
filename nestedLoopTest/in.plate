@@ -8,49 +8,49 @@
 #
 
 # VARIABLES DECLARATION
-# settin up number of iterations in each loop 
-variable	nKnudsen	equal	10		# Knudsen
-variable	nMach		equal	10		# Mach 
-variable	nAOA		equal	10		# angle of attack 
+# setting up number of iterations in each loop 
+variable	nKnudsen	equal	10				# Knudsen
+variable	nMach		equal	10				# Mach 
+variable	nAOA		equal	10				# angle of attack 
 
 # setting up mixture properties
-variable	gammaMixture	equal	5/3		# specific heat ratio		
+variable	gammaMixture	equal	5/3			# specific heat ratio		
 variable	boltzConstant	equal   1.38E-23	# Boltzmann constant declaration
 
 # setting up Mach number interval extremes
-variable	minMach		equal	10		# minimum Mach number 
-variable	maxMach		equal	25		# maximum Mach number 
+variable	minMach		equal	10				# minimum Mach number 
+variable	maxMach		equal	25				# maximum Mach number 
 
 # setting up Knudsen number interval extremes
-variable	minKnudsen	equal	0.25		# minimum Knudsen number
-variable	maxKnudsen	equal	0.5		# maximum Knudsen number
+variable	minKnudsen	equal	0.25			# minimum Knudsen number
+variable	maxKnudsen	equal	0.5				# maximum Knudsen number
 
 # setting up angle of attack interval extremes
-variable	minAOA		equal	0		# minimum angle of attack
-variable	maxAOA		equal	30		# maximum angle of attack 
+variable	minAOA		equal	0				# minimum angle of attack
+variable	maxAOA		equal	30				# maximum angle of attack 
 
 # setting up flow temperature
 variable	Tflow		equal	300
 
 # setting up flow mean properties
-variable	N2mass		equal	4.65E-26	# averaged mixture weight	
-variable	N2diameter	equal	4.17E-10	# averaged mixture molecule dimension
+variable	N2mass		equal	4.65E-26		# averaged mixture weight	
+variable	N2diameter	equal	4.17E-10		# averaged mixture molecule dimension
 
 # setting up scaling value for the parcels reduction study 
-variable	Wp		equal	100		# number of parcels for every number density
+variable	Wp		equal	100					# number of parcels for every number density
 
 # setting up simulation study values for a proper time/space analysis of the hypersonic flow 
-variable	Nlam		equal	4		# space 
-variable	Ntau		equal	4		# time 
+variable	Nlam		equal	4				# space 
+variable	Ntau		equal	4				# time 
 
 # setting up domain properties
-variable	L		equal 	1		# reference length 
-variable	xMin		equal	-2		# minimum x of the grid 
-variable 	xMax		equal 	1		# maximum x of the grid 
-variable 	yMin		equal	-1		# minimum y of the grid 
-variable	yMax		equal	2		# maximum y of the grid 
-variable	zMin		equal	-0.5		# minimum z of the grid 
-variable	zMax		equal	0.5		# maximum z of the grid 
+variable	L			equal 	1				# reference length 
+variable	xMin		equal	-2				# minimum x of the grid 
+variable 	xMax		equal 	1				# maximum x of the grid 
+variable 	yMin		equal	-1				# minimum y of the grid 
+variable	yMax		equal	2				# maximum y of the grid 
+variable	zMin		equal	-0.5			# minimum z of the grid 
+variable	zMax		equal	0.5				# maximum z of the grid 
 
 # setting up 1st loop
 variable iK loop ${nKnudsen} 
@@ -130,7 +130,7 @@ variable iK loop ${nKnudsen}
 				print " "
 				print "--- AOA                           = ${thetaAngle}"
 				print "--- sound speed                   = ${cSpeed}"
-				print "--- Mach number	                  = ${MachNumber}"
+				print "--- Mach number	                 = ${MachNumber}"
 				print "--- Knudsen number                = ${KnudsenNumber}"
 				print "--- flow speed                    = ${Uflow}"
 				print "--- number density    *PRE-SHOCK* = ${numberDensity}"
@@ -139,97 +139,16 @@ variable iK loop ${nKnudsen}
 				print "--- number simulated *POST-SHOCK* = ${numberSimulatedPS}"
 				print "--- flow temperature *POST-SHOCK* = ${TflowPS}"
 				print "--- mean free path   *POST-SHOCK* = ${meanFreePathPS}"
-				print "--- thermal speed	          = ${thermalSpeed}"
+				print "--- thermal speed	             = ${thermalSpeed}"
 				print "--- collision time interval       = ${timeInterval}"
-				print "--- ds				  = ${ds}"
-				print "--- dt				  = ${dt}"
-				print "--- X cells			  = ${xNcells}"
-				print "--- Y cells			  = ${yNcells}"
+				print "--- ds				  			 = ${ds}"
+				print "--- dt				  			 = ${dt}"
+				print "--- X cells			  			 = ${xNcells}"
+				print "--- Y cells			  			 = ${yNcells}"
 				print " "
 				
-				# SETTING UP GRID 
-				# study box generation
-				create_box      ${xMin} ${xMax} ${yMin} ${yMax} ${zMin} ${zMax}
-				
-				# grid generation 
-				create_grid     ${xNcells} ${yNcells} 1
-				
-				# parallel computing settings
-				balance_grid    rcb part
-				fix             loadbalance balance 1000 1.1 rcb part
-				
-				# SETTING UP PARTICLES PROPERTIES
-				# No. of particles | No. of simulated particles
-				global          nrho ${numberDensity} fnum ${numberSimulated}
-				
-				# species properties loading
-				species         collisionProperties/marsAtmosphere.species CO2 N2
-				
-				# mixture properties declaration
-				mixture         atmoMars CO2 N2 vstream ${Uflow} 0.0 0.0 temp ${Tflow} 	# name | molecules | speed | temperature 
-				mixture		atmoMars CO2 	frac 0.97				# CO2 fraction
-				mixture		atmoMars N2  	frac 0.03				# N2 fraction
-				
-				# SURFACE PROPERTIES SETUP
-				# surface loading and rotation
-				read_surf       geometry/data.plate origin 0.0 0.0 0.0 rotate ${thetaAngle} 0 0 1
-				
-				# COLLISION PROPERTIES
-				# surface collision properties
-				surf_collide    surfCollision diffuse 1500.0 1.0
-				surf_modify     all collide surfCollision
-				
-				# molecule(s)/molecule(s) collision properties
-				collide 	vss atmoMars collisionProperties/marsAtmosphere.vss
-				collide_modify	vibrate smooth
-				
-				# REACTION SETUP
-				# problem set as non reactive
-				react		none
-				
-				# INJECTION SETUP
-				# due to flow speed and thermal speed -> flow only from x[+ve], y[-ve] and y[+ve]
-				fix fixInject   emit/face atmoMars xlo ylo yhi
-				
-				# TIME STEP DECLARATION
-				timestep        ${dt}
-				
-				# PROPERTIES COMPUTATION
-				# force all over the surface 
-				compute         fx surf all all fx	# x direction
-				
-				# summing up all the forces and average them
-				fix             fxAVE ave/surf all 1 10 100 c_fx[*] ave one
-				
-				# sum of the average forces 
-				compute         fxTOT reduce sum f_fxAVE[*]
-				
-				# PLOTTING/PRINTING PROPERTIES
-				# every 100 time steps
-				stats           100
-				
-				# output setup
-				stats_style     step cpu np nattempt ncoll nscoll c_fxTOT
-				
-				# directory generation for result storage
-				shell 		mkdir dump
-				shell 		mkdir dump/Kn${KnudsenNumber}
-				shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}
-				shell 		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}
-				shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/force
-				shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/forceAverage
-				shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/forceTotal
-				
-				# drag force storage
-				dump		dataDumpForce 		surf all 100 ./dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/force/xForce.* 			c_fx[*] 
-				# averaged drag force storage
-				dump 		dataDumpForceAverage 	surf all 100 ./dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/forceAverage/xFroceAverage.* 	f_fxAVE[*]
-				# setup No. timesteps to simulate
-				run             200
-				
-				# undump command 
-				undump		dataDumpForce 
-				undump		dataDumpForceAverage
+                # running case 
+                include     in.case
 				
 				# clear environment for the new one
 				clear

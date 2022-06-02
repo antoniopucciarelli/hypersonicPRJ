@@ -1,4 +1,5 @@
 dump/
 *.vtu
+log.*
 
 /Cases/No_react/spa_mpi
