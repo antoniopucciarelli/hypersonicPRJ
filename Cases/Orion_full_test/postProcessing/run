@@ -1,0 +1,10 @@
+#!/bin/sh
+
+rm -r grid_output *.pvd
+
+alias my_pvpython='~/Desktop/sparta/ParaView/bin/pvpython'
+my_pvpython grid2paraview.py grid_descriptor.txt grid_output -r ../dump/flow_field.*
+
+paraview *.pvd 
+
+

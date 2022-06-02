@@ -1,0 +1,8 @@
+#!/bin/sh
+
+pvpython stl2surf.py capsuleGeometry/orion_simple.stl data.orionSimple
+
+mpirun -np 4 ./spa_mpi < in.aeroCoeffCase 
+
+gthumb images/image.1000.ppm
+
