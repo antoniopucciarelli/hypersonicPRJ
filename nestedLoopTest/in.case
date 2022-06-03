@@ -1,3 +1,16 @@
+# INITIALIZING CASE
+# seed generation -> random properties for the simulation 
+seed            12345
+    
+# setting up simulation type 
+dimension       2
+    
+# setting up grid properties
+global          gridcut 0.1 comm/sort yes 
+    
+# setting up boundary properties 
+boundary        oo oo pp
+
 # SETTING UP GRID 
 # study box generation
 create_box      ${xMin} ${xMax} ${yMin} ${yMax} ${zMin} ${zMax}
@@ -23,7 +36,7 @@ mixture		atmoMars N2  	frac 0.03				# N2 fraction
 
 # SURFACE PROPERTIES SETUP
 # surface loading and rotation
-read_surf       geometry/data.plate origin 0.0 0.0 0.0 rotate ${thetaAngle} 0 0 1
+read_surf       geometry/data.plate origin 0.0 0.0 0.0 rotate -${thetaAngle} 0 0 1
 
 # COLLISION PROPERTIES
 # surface collision properties
@@ -31,7 +44,7 @@ surf_collide    surfCollision diffuse 1500.0 1.0
 surf_modify     all collide surfCollision
 
 # molecule(s)/molecule(s) collision properties
-collide 	vss atmoMars collisionProperties/marsAtmosphere.vss
+collide 	    vss atmoMars collisionProperties/marsAtmosphere.vss
 collide_modify	vibrate smooth
 
 # REACTION SETUP
@@ -47,21 +60,34 @@ timestep        ${dt}
 
 # PROPERTIES COMPUTATION
 # force all over the surface 
+compute         fxpast surf all all fx	# x direction
+
+# summing up all the forces and average them
+fix             fxAVEpast ave/surf all 1 10 100 c_fxpast[*] ave one
+
+# sum of the average forces 
+compute         fxTOTpast reduce sum f_fxAVEpast[*]
+# PLOTTING/PRINTING PROPERTIES
+# every 100 time steps
+stats           100     
+
+# output setup
+stats_style     step cpu np nattempt ncoll nscoll c_fxTOTpast
+
+# doing the first run of the case in order to get a first approximation of the total drag force 
+run     1000 
+
+# PROPERTIES COMPUTATION
+# force all over the surface 
 compute         fx surf all all fx	# x direction
 
 # summing up all the forces and average them
-fix             fxAVE ave/surf all 1 10 100 c_fx[*] ave one
+fix             fxAVE ave/surf all 1 10 100 c_fx[*] ave running
 
 # sum of the average forces 
 compute         fxTOT reduce sum f_fxAVE[*]
 
 # PLOTTING/PRINTING PROPERTIES
-# every 100 time steps
-stats           100
-
-# output setup
-stats_style     step cpu np nattempt ncoll nscoll c_fxTOT
-
 # directory generation for result storage
 shell 		mkdir dump
 shell 		mkdir dump/Kn${KnudsenNumber}
@@ -69,40 +95,44 @@ shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}
 shell 		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}
 shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/force
 shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/forceAverage
-#shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/forceTotal
+shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/parcelsImage
 
 # drag force storage
-dump		dataDumpForce 			surf all 100 ./dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/force/xForce.* 					c_fx[*] 
+dump		dataDumpForce 			surf all 200 ./dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/force/xForce.* 					c_fx[*] 
 # averaged drag force storage
-dump 		dataDumpForceAverage 	surf all 100 ./dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/forceAverage/xFroceAverage.* 	f_fxAVE[*]
+dump 		dataDumpForceAverage 	surf all 200 ./dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/forceAverage/xFroceAverage.* 	f_fxAVE[*]
+# figure printout 
+dump        figureDump              image all 100 ./dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/parcelsImage/image.*.ppm & 
+                                    type type pdiam 0.01 surf proc 0.01 size 512 512 zoom 1.75 gline no 0.005 
 
+# SOLVING CASE WITH ITERATIVE PROCEDURE 
+# setting up convergence study parameters
 variable fxTOTprev  equal   0.0
-variable tol        equal   1E-2
+variable tol        equal   1E-3
+variable newTol     equal   1.0
 
+# printing variables 
 print "--- fxTOTprev = ${fxTOTprev}"
 print "--- tol       = ${tol}"
+print "--- newTol    = ${newTol}"
 
-run     400 
-
+# setting up label for the while loop 
 label   checkConvergenceLabel
 
-variable fxTOTnew   equal   c_fxTOT
-variable newTol equal abs((${fxTOTprev}-${fxTOTnew})/${fxTOTnew})
-
-if "${newTol} > ${tol}" then                                    & 
-    "print ' '"                                                 &   
-    "print '--- new iteration'"                                 &
-    "print '--- fxTOTnew = ${fxTOTnew}'"                        &
-    "print '--- newTol   = ${newTol}'"                          &
-    "variable fxTOTprev  equal   ${fxTOTnew}"                   &
-    "run             200"                                       &
-    "jump    SELF    checkConvergenceLabel"                     & 
-    "print ' '"                                                 &
+# checking error with tolerance 
+if "${newTol} > ${tol}" then                                                    & 
+    "run      500"                                                              &
+    "variable fxTOTnew   equal   c_fxTOT"                                       &
+    "variable newTol     equal   abs((${fxTOTprev}-${fxTOTnew})/${fxTOTnew})"   &
+    "variable fxTOTprev  equal   ${fxTOTnew}"                                   &
+    "jump    SELF    checkConvergenceLabel"                                     & 
 else "print '--- CONVERGENCE REACHED ---'"    
 
-variable totalForce equal c_fxTOT
+# printing results after convergence 
+variable    totalForce  equal   c_fxTOT
 print "--- total force = ${totalForce}"
 
 # undump command 
 undump		dataDumpForce 
 undump		dataDumpForceAverage
+undump      figureDump
