@@ -69,34 +69,28 @@ timestep        ${dt}
 
 # PROPERTIES COMPUTATION
 # force all over the surface 
-compute         fx surf all all fx	# x direction
+compute         FORCEs      surf        all all             fx fy	                    # x|y direction 
 
 # summing up all the forces and average them
-fix             fxAVE ave/surf all 1 10 100 c_fx[*] ave one
+fix             forceAVE    ave/surf    all 1 10 100        c_FORCEs[*] ave one         # average x|y direction 
 
 # sum of the average forces 
-compute         fxTOT reduce sum f_fxAVE[*]
+compute         forceTOT    reduce      sum                 f_forceAVE[1] f_forceAVE[2] # total x|y direction 
 
 # PLOTTING/PRINTING PROPERTIES
 # every 100 time steps
 stats           100     
 
 # output setup
-stats_style     step cpu np nattempt ncoll nscoll c_fxTOT
+stats_style     step cpu c_forceTOT[1] c_forceTOT[2]
 
 # doing the first run of the case in order to get a first approximation of the total drag force 
 run     2000 
 
-# printing initial results
-#variable    totalXforce     equal c_fxTOT
-#print       "-----------------------------------"
-#print       "--- end of 1st initialization field"
-#print       "--- fxTOT = ${totalXforce}"
-#print       "-----------------------------------" 
-
 # SOLVING CASE WITH ITERATIVE PROCEDURE 
 # setting up convergence study parameters
 variable    fxTOTprev  equal   0.0
+variable    fyTOTprev  equal   0.0
 variable    tol        equal   1E-1
 
 # printing variables 
@@ -107,13 +101,14 @@ print " "
 # PROPERTIES COMPUTATION
 
 # summing up all the forces and average them
-fix         fxAVE2      ave/surf    all 1 10 100 c_fx[*] ave running
+fix         forceAVE2      ave/surf    all 1 10 100     c_FORCEs[*] ave running 
 
 # sum of the average forces 
-compute     fxTOT2      reduce      sum f_fxAVE2[*]
+compute     forceTOT2      reduce      sum              f_forceAVE2[1] f_forceAVE2[2]
 
 # total force computation
-variable    fxTOTnew    equal       c_fxTOT2
+variable    fxTOTnew    equal       c_forceTOT2[1]  
+variable    fyTOTnew    equal       c_forceTOT2[2]
 
 # setting up label for the while loop 
 label checkConvergenceLabel
@@ -129,15 +124,15 @@ shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/forceAverage
 shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/parcelsImage
 
 # drag force storage
-dump		dataDumpForce 			surf all 100 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/force/xForce.* 				c_fx[*] 
+dump		dataDumpForce 			surf all 100 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/force/xForce.* 				c_FORCEs[1]     c_FORCEs[2] 
 # averaged drag force storage
-dump 		dataDumpForceAverage 	surf all 100 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/forceAverage/xForceAverage.* 	f_fxAVE2[*]
+dump 		dataDumpForceAverage 	surf all 100 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/forceAverage/xForceAverage.* 	f_forceAVE2[1]  f_forceAVE2[2]
 # figure printout 
 dump       	figureDump              image all 200 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/parcelsImage/image.*.ppm & 
                                     type type pdiam 0.01 surf proc 0.01 size 512 512 zoom 1.75 gline no 0.005 
 
 # statistics printout 
-stats_style     step cpu   v_fxTOTnew
+stats_style     step cpu   v_fxTOTnew   v_fyTOTnew
 
 # run case
 run         2000
@@ -147,15 +142,15 @@ undump		dataDumpForce
 undump		dataDumpForceAverage
 undump      figureDump
 
-#Computing the new variable after 2000 iterations                          
-#variable fxTOTnew equal fxTOTnew
-
 print '--- fxTOTnew = ${fxTOTnew}'
-variable newTol equal abs((${fxTOTnew}-${fxTOTprev})/${fxTOTnew})
-print '--- newTol   = ${newTol}'
+variable xForceNewTol   equal abs((${fxTOTnew}-${fxTOTprev})/${fxTOTnew})
+variable yForceNewTol   equal abs((${fyTOTnew}-${fyTOTprev})/${fyTOTnew})
+print '--- xForceNewTol   = ${xForceNewTol}'
+print '--- yForceNewTol   = ${yForceNewTol}'
 
 #check convergence
-if '${newTol} > ${tol}' then                    &
-    'variable fxTOTprev equal ${fxTOTnew}'      &
-    'jump SELF checkConvergenceLabel'           &
+if '${xForceNewTol} > ${tol} && ${yForceNewTol} > ${tol}' then &
+    'variable fxTOTprev equal ${fxTOTnew}'                     &
+    'variable fyTOTprev equal ${fyTOTnew}'                     &
+    'jump SELF checkConvergenceLabel'                          &
 else "print '--- CONVERGENCE REACHED ---'"                                          
