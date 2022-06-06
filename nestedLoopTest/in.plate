@@ -9,9 +9,9 @@
 
 # VARIABLES DECLARATION
 # setting up number of iterations in each loop 
-variable	nKnudsen	equal	1				# Knudsen
-variable	nMach		equal	1				# Mach 
-variable	nAOA		equal	2				# angle of attack 
+variable	nKnudsen	equal	3				# Knudsen
+variable	nMach		equal	3				# Mach 
+variable	nAOA		equal	3				# angle of attack 
 
 # setting up mixture properties
 variable	gammaMixture	equal	5/3			# specific heat ratio		
@@ -138,7 +138,7 @@ variable iK loop ${nKnudsen}
                 # running case 
                 include     in.case
 				
-				# clear environment for the new one
+				# clear environment for the new case study
 				clear
 				
 				# advancing to the next AOA
