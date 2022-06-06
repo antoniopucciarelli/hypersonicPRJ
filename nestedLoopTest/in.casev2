@@ -1,0 +1,155 @@
+
+
+
+
+# INITIALIZING CASE
+# seed generation -> random properties for the simulation 
+seed            12345
+    
+# setting up simulation type 
+dimension       2
+    
+# setting up grid properties
+global          gridcut 0.0 comm/sort yes 
+    
+# setting up boundary properties 
+boundary        oo oo pp
+
+# SETTING UP GRID 
+# study box generation
+create_box      ${xMin} ${xMax} ${yMin} ${yMax} ${zMin} ${zMax}
+
+# grid generation 
+create_grid     ${xNcells} ${yNcells} 1
+
+# parallel computing settings
+balance_grid    rcb part
+fix             loadbalance balance 1000 1.1 rcb part
+
+# SETTING UP PARTICLES PROPERTIES
+# No. of particles | No. of simulated particles
+global          nrho ${numberDensity} fnum ${numberSimulated}
+
+# species properties loading
+species         collisionProperties/marsAtmosphere.species CO2 N2
+
+# mixture properties declaration
+mixture         atmoMars CO2 N2 vstream ${Uflow} 0.0 0.0 temp ${Tflow} 	# name | molecules | speed | temperature 
+mixture		atmoMars CO2 	frac 0.97				# CO2 fraction
+mixture		atmoMars N2  	frac 0.03				# N2 fraction
+
+# SURFACE PROPERTIES SETUP
+# surface loading and rotation
+read_surf       geometry/data.plate origin 0.0 0.0 0.0 rotate -${thetaAngle} 0 0 1
+
+# COLLISION PROPERTIES
+# surface collision properties
+surf_collide    surfCollision diffuse 1500.0 1.0
+surf_modify     all collide surfCollision
+
+# molecule(s)/molecule(s) collision properties
+collide 	    vss atmoMars collisionProperties/marsAtmosphere.vss
+collide_modify	vibrate smooth
+
+# REACTION SETUP
+# problem set as non reactive
+react		none
+
+# INJECTION SETUP
+# due to flow speed and thermal speed -> flow only from x[+ve], y[-ve] and y[+ve]
+fix fixInject   emit/face atmoMars xlo ylo yhi
+
+# TIME STEP DECLARATION
+timestep        ${dt}
+
+# PROPERTIES COMPUTATION
+# force all over the surface 
+compute         fx surf all all fx	# x direction
+
+# summing up all the forces and average them
+fix             fxAVE ave/surf all 1 10 100 c_fx[*] ave one
+
+# sum of the average forces 
+compute         fxTOT reduce sum f_fxAVE[*]
+
+# PLOTTING/PRINTING PROPERTIES
+# every 100 time steps
+stats           100     
+
+# output setup
+stats_style     step cpu np nattempt ncoll nscoll c_fxTOT
+
+# doing the first run of the case in order to get a first approximation of the total drag force 
+run     2000 
+
+# printing initial results
+#variable    totalXforce     equal c_fxTOT
+#print       "-----------------------------------"
+#print       "--- end of 1st initialization field"
+#print       "--- fxTOT = ${totalXforce}"
+#print       "-----------------------------------" 
+
+# SOLVING CASE WITH ITERATIVE PROCEDURE 
+# setting up convergence study parameters
+variable    fxTOTprev  equal   0.0
+variable    tol        equal   1E-3
+
+# printing variables 
+print " " 
+#print "--- fxTOTprev = ${fxTOTprev}"
+print "--- tol       = ${tol}"
+print " "
+
+# PROPERTIES COMPUTATION
+# setting up label for the while loop 
+#label   checkConvergenceLabel
+
+# summing up all the forces and average them
+fix fxAVE2 ave/surf all 1 10 100 c_fx[*] ave running
+
+# sum of the average forces 
+compute fxTOT2 reduce sum f_fxAVE2[*]
+
+variable fxTOTnew equal c_fxTOT2
+
+label checkConvergenceLabel
+
+# PLOTTING/PRINTING PROPERTIES
+# directory generation for result storage
+#shell 		mkdir dump
+#shell 		mkdir dump/Kn${KnudsenNumber}
+#shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}
+#shell 		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}
+#shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/force
+#shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/forceAverage
+#shell		mkdir dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/parcelsImage
+
+# drag force storage
+#dump		dataDumpForce 			surf all 100 ./dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/force/xForce.* 					c_fx[*] 
+# averaged drag force storage
+#dump 		dataDumpForceAverage 	surf all 100 ./dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/forceAverage/xFroceAverage.* 	f_fxAVE2[*]
+# figure printout 
+#dump        	figureDump          image all 100 ./dump/Kn${KnudsenNumber}/Ma${MachNumber}/AOA${thetaAngle}/parcelsImage/image.*.ppm & 
+#                                   type type pdiam 0.01 surf proc 0.01 size 512 512 zoom 1.75 gline no 0.005 
+
+# statistics printout 
+stats_style     step cpu   v_fxTOTnew
+
+run         2000
+
+#Computing the new variable after 2000 iterations                          
+#variable fxTOTnew equal fxTOTnew
+
+print '--- fxTOTnew = ${fxTOTnew}'
+variable newTol equal abs((${fxTOTnew}-${fxTOTprev})/${fxTOTnew})
+print '--- newTol = ${newTol}'
+#check convergence
+if '${newTol} > ${tol}' then               &
+    'variable fxTOTprev equal ${fxTOTnew}'    &
+    'jump SELF checkConvergenceLabel'
+else "print '--- CONVERGENCE REACHED ---'"                                          
+
+# undump command 
+undump		dataDumpForce 
+undump		dataDumpForceAverage
+undump      figureDump
