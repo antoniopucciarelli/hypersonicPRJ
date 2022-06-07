@@ -44,13 +44,13 @@ variable	Nlam		equal	4				# space
 variable	Ntau		equal	4				# time 
 
 # setting up domain properties
-variable	L			equal 	1				# reference length 
-variable	xMin		equal	-2				# minimum x of the grid 
-variable 	xMax		equal 	1				# maximum x of the grid 
-variable 	yMin		equal	-1				# minimum y of the grid 
-variable	yMax		equal	2				# maximum y of the grid 
-variable	zMin		equal	-0.5			# minimum z of the grid 
-variable	zMax		equal	0.5				# maximum z of the grid 
+variable	L			equal 	5				# reference length 
+variable	xMin		equal	-10				# minimum x of the grid 
+variable 	xMax		equal 	10				# maximum x of the grid 
+variable 	yMin		equal	-10				# minimum y of the grid 
+variable	yMax		equal	10				# maximum y of the grid 
+variable	zMin		equal	-10				# minimum z of the grid 
+variable	zMax		equal	10				# maximum z of the grid 
 
 # setting up 1st loop
 variable iK loop ${nKnudsen} 

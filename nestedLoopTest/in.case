@@ -12,13 +12,15 @@
 seed            12345
     
 # setting up simulation type 
-dimension       2
+dimension       3
     
 # setting up grid properties
-global          gridcut 0.0 comm/sort yes 
+global          surfmax     100000
+global          splitmax    15
+global          gridcut     0.0 comm/sort yes 
     
 # setting up boundary properties 
-boundary        oo oo pp
+boundary        oo oo oo
 
 # SETTING UP GRID 
 # study box generation
@@ -45,7 +47,7 @@ mixture		atmoMars N2  	frac 0.03				                # N2 fraction
 
 # SURFACE PROPERTIES SETUP
 # surface loading and rotation
-read_surf       geometry/data.plate origin 0.0 0.0 0.0 rotate -${thetaAngle} 0 0 1
+read_surf       geometry/data.orionSimple origin 0.0 0.0 0.0 rotate -${thetaAngle} 0 0 1
 
 # COLLISION PROPERTIES
 # surface collision properties
@@ -61,8 +63,8 @@ collide_modify	vibrate     smooth
 react		none
 
 # INJECTION SETUP
-# due to flow speed and thermal speed -> flow only from x[+ve], y[-ve] and y[+ve]
-fix fixInject   emit/face atmoMars xlo ylo yhi
+# due to flow speed and thermal speed -> flow only from x[+ve], y[-ve], y[+ve], z[-ve] and z[+ve]
+fix fixInject   emit/face atmoMars xlo ylo yhi zlo zhi
 
 # TIME STEP DECLARATION
 timestep        ${dt}
@@ -86,6 +88,15 @@ stats_style     step cpu c_forceTOT[1] c_forceTOT[2]
 
 # doing the first run of the case in order to get a first approximation of the total drag force 
 run     2000 
+
+# grid adaptation
+fix     adaptgrid adapt 500 all refine particle 50 1
+
+# running again for the grid adaptation
+run     1000
+
+# unfixing grid 
+unfix   adaptgrid
 
 # SOLVING CASE WITH ITERATIVE PROCEDURE 
 # setting up convergence study parameters
@@ -124,18 +135,18 @@ shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/forceAverage
 shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/parcelsImage
 
 # drag force storage
-dump		dataDumpForce 			surf all 100 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/force/xForce.* 				c_FORCEs[1]     c_FORCEs[2] 
+dump		dataDumpForce 			surf all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/force/xForce.* 				c_FORCEs[1]     c_FORCEs[2] 
 # averaged drag force storage
-dump 		dataDumpForceAverage 	surf all 100 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/forceAverage/xForceAverage.* 	f_forceAVE2[1]  f_forceAVE2[2]
+dump 		dataDumpForceAverage 	surf all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/forceAverage/xForceAverage.* 	f_forceAVE2[1]  f_forceAVE2[2]
 # figure printout 
-dump       	figureDump              image all 200 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/parcelsImage/image.*.ppm & 
+dump       	figureDump              image all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/parcelsImage/image.*.ppm & 
                                     type type pdiam 0.01 surf proc 0.01 size 512 512 zoom 1.75 gline no 0.005 
 
 # statistics printout 
 stats_style     step cpu   v_fxTOTnew   v_fyTOTnew
 
 # run case
-run         2000
+run         400
 
 # undump command 
 undump		dataDumpForce 
