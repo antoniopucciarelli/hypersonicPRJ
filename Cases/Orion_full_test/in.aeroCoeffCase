@@ -28,7 +28,7 @@ global nrho 5.84E15 fnum 1E15
 species Mair.species CO2 N2
 
 # free-stream velocity and temperature
-mixture Mair CO2 N2 vstream 8000.0 0.0 0.0 temp 850 
+mixture Mair CO2 N2 vstream 8000.0 0.0 0.0 temp 2000 
 mixture Mair CO2 frac 0.97 #RAF: here should be the molar fraction
                            #0.97 in the paper was the mass fraction
 mixture Mair N2  frac 0.03 
@@ -39,7 +39,7 @@ collide none
 #collide_modify     vibrate smooth
 
 # import geometry
-read_surf orion_scaled.data origin 0.0 0.0 0.0 #rotate 180 0 0 1
+read_surf orion_scaled.data origin 0.0 0.0 0.0 rotate 30 0 1 0
 
 # create a gas-surface collision type and give it the ID = 1
 surf_collide 1 specular
@@ -64,16 +64,16 @@ stats 100
 # nattempt = number of attempted collisions (this step)
 stats_style step cpu np nattempt ncoll
 
-dump dumpfig image all 100 image.*.ppm type type pdiam 0.05 &
-     surf proc 0.01 size 512 512 gline no 0.005
+dump dumpfig image all 100 image.*.ppm type type pdiam 0.2 &
+     surf proc 0.01 size 512 512 gline no 0.005 view 90 0
 # run simulation
-run 1500
+run 3500
 
 # grid adaptation
 fix adaptgrid adapt 500 all refine particle 50 1
 
 # run simulation after grid refinement
-run 1500
+run 3500
 
 # unfixing adapt grid 
 unfix adaptgrid
@@ -114,4 +114,4 @@ dump  myDumpID  grid  all  100  ./dump/flow_field.* id proc &
 stats_style step cpu np nattempt ncoll c_fxTOT c_fzTOT
 
 # run simulation 
-run 2000	
+#run 2000	
