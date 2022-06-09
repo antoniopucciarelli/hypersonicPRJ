@@ -1,0 +1,169 @@
+# forces computation -> aerodynamic coefficients for different Kn, Ma & AOA
+# authors:
+#	antonio pucciarelli
+#	raffaele tirotta
+#
+# aim:
+# --- compute aerodynamic coefficient using DSMC
+#
+
+# VARIABLES DECLARATION
+# setting up number of iterations in each loop 
+variable	nKnudsen	equal	1				# Knudsen
+variable	nMach		equal	1				# Mach 
+variable	nAOA		equal	1				# angle of attack 
+
+# setting up mixture properties
+variable	gammaMixture	equal	5/3			# specific heat ratio		
+variable	boltzConstant	equal   1.38E-23	# Boltzmann constant declaration
+
+# setting up Mach number interval extremes
+variable	minMach		equal	10				# minimum Mach number 
+variable	maxMach		equal	25				# maximum Mach number 
+
+# setting up Knudsen number interval extremes
+variable	minKnudsen	equal	0.25			# minimum Knudsen number
+variable	maxKnudsen	equal	0.5				# maximum Knudsen number
+
+# setting up angle of attack interval extremes
+variable	minAOA		equal	0				# minimum angle of attack
+variable	maxAOA		equal	30				# maximum angle of attack 
+
+# setting up flow temperature
+variable	Tflow		equal	300
+
+# setting up flow mean properties
+variable	N2mass		equal	4.65E-26		# averaged mixture weight	
+variable	N2diameter	equal	4.17E-10		# averaged mixture molecule dimension
+
+# NUMBER OF SIMULATED PARTICLES IN ONE CELL
+variable	NumberSimCell		equal	20					# number of parcels for every number density
+
+# setting up simulation study values for a proper time/space analysis of the hypersonic flow 
+variable	Nlam		equal	4				# space 
+variable	Ntau		equal	4				# time 
+
+# setting up domain properties
+variable	L			equal 	5				# reference length 
+variable	xMin		equal	-10				# minimum x of the grid 
+variable 	xMax		equal 	10				# maximum x of the grid 
+variable 	yMin		equal	-10				# minimum y of the grid 
+variable	yMax		equal	10				# maximum y of the grid 
+variable	zMin		equal	-10				# minimum z of the grid 
+variable	zMax		equal	10				# maximum z of the grid 
+
+# setting up 1st loop
+variable iK loop ${nKnudsen} 
+	
+	# label declaration for the JUMP procedure 
+	label 		loopLabelKnudsen
+	
+	# setting up 2nd loop  
+	variable iM loop ${nMach}
+		
+		# label declaration for the JUMP procedure 
+		label	loopLabelMach
+			
+			# setting up 3rd loop
+			variable iA loop ${nAOA} 
+				
+				# label declaration for the JUMP procedure 
+				label		loopLabelAOA
+				
+				# printing nested loop properties 
+				print " "
+				print "---------------------------------------"
+				print "--- loop No. = ${iK} --- *Knudsen* ---"
+				print "--- loop No. = ${iM} ---   *Ma*    ---"
+				print "--- loop No. = ${iA} ---   *AOA*   ---"
+				print "---------------------------------------"
+				print " " 
+				
+				# variables computations
+				# AOA
+				variable 	thetaAngle 	equal 	${iA}*5
+				# sound speed 
+				variable	cSpeed		equal	sqrt(${gammaMixture}*${boltzConstant}/${N2mass}*${Tflow})
+				# Mach number 
+				variable	MachNumber	equal	${minMach}+(${maxMach}-${minMach})/${nMach}*${iM}
+				# flow speed 
+				variable	Uflow		equal	${MachNumber}*${cSpeed}
+				# Knudsen number 
+				variable	KnudsenNumber	equal 	${minKnudsen}+(${maxKnudsen}-${minKnudsen})/${nKnudsen}*${iK}
+				# number density -- pre-shock
+				variable	numberDensity	equal	1.0/(sqrt(2)*${KnudsenNumber}*${L}*PI*${N2diameter}^2)
+				# number density -- post-shock
+				variable	numberDensityPS equal   (${gammaMixture}+1)/(${gammaMixture}-1)*${numberDensity}
+				# flow temperature -- post-shock
+				variable	TflowPS		equal	${numberDensity}/${numberDensityPS}*${Uflow}^2/(3*${boltzConstant}/${N2mass})
+				# mean free path -- post-shock
+				variable	meanFreePathPS 	equal	1.0/(sqrt(2)*${numberDensityPS}*PI*${N2diameter}^2)
+				# thermal speed -- post-shock
+				variable	thermalSpeed	equal	sqrt((8*${boltzConstant}*${TflowPS})/(PI*${N2mass}))
+				# collision time interval -- post-shock
+				variable	timeInterval	equal	1.0/(${numberDensityPS}*PI*${N2diameter}^2*${thermalSpeed})
+				# simulation time interval -- using post-shock conditions and the engineering/simulation relaxation
+				variable	dt		equal 	${timeInterval}/${Ntau}  
+				# simulation space interval -- using post-shock conditions and the engineering/simulation relaxation
+				variable	ds 		equal 	${meanFreePathPS}/${Nlam}
+				#compute true number of particles in each cell -> 3D multiply per 3 dimension
+				#SET TO FREESTREAM CONDITION -> if it doesn't satisfy  change it
+                                variable        NumberTrueCell  equal   ${numberDensity}*${ds}*${ds}*${ds}
+				# number of simulated particles -- post-shock
+                                variable        Wp              equal   100*${NumberTrueCell}/${NumberSimCell}
+				# getting cell properties
+				variable	xNcells		equal	round((${xMax}-${xMin})/${ds}) 	# x direction	
+				variable	yNcells		equal   round((${yMax}-${yMin})/${ds})	# y direction
+				variable        zNcells         equal   round((${zMax}-${zMin})/${ds})  # z direction 
+
+				# printing values
+				print " "
+				print "--- AOA                           = ${thetaAngle}"
+				print "--- sound speed                   = ${cSpeed}"
+				print "--- Mach number	                 = ${MachNumber}"
+				print "--- Knudsen number                = ${KnudsenNumber}"
+				print "--- flow speed                    = ${Uflow}"
+				print "--- number density    *PRE-SHOCK* = ${numberDensity}"
+				print "--- Wp                            = ${Wp}"
+				#print "--- number simulated  *PRE-SHOCK* = ${numberSimulated}"
+				print "--- number density   *POST-SHOCK* = ${numberDensityPS}"
+				#print "--- number simulated *POST-SHOCK* = ${numberSimulatedPS}"
+				print "--- flow temperature *POST-SHOCK* = ${TflowPS}"
+				print "--- mean free path   *POST-SHOCK* = ${meanFreePathPS}"
+				print "--- thermal speed	             = ${thermalSpeed}"
+				print "--- collision time interval       = ${timeInterval}"
+				print "--- ds				  			 = ${ds}"
+				print "--- dt				  			 = ${dt}"
+				print "--- X cells			  			 = ${xNcells}"
+				print "--- Y cells			  			 = ${yNcells}"
+				print " "
+				
+                # running case 
+                include     in.case_full
+				
+				# clear environment for the new case study
+				clear
+				
+				# advancing to the next AOA
+				next 		iA 
+				
+				# JUMP at the beginning of the AOA loop
+				jump 		SELF loopLabelAOA
+			
+			# advancing to the next Mach number 
+			next iM
+			
+			# JUMP at the beginning of the Mach loop
+			jump 	SELF loopLabelMach
+		
+		# advancing to the next Knudsen number 
+		next iK
+		
+		# JUMP at the beginning of Knudsen loop
+		jump 	SELF	loopLabelKnudsen
+
+# end of the simulation message with the total number of simulations
+print " "
+variable totSimulation equal ${nKnudsen}*${nMach}*${nAOA}
+print "*** end of ${totSimulation} simulations ***"
+print " " 

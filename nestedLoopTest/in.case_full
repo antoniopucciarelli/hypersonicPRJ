@@ -35,7 +35,7 @@ fix             loadbalance balance 1000 1.1 rcb part
 
 # SETTING UP PARTICLES PROPERTIES
 # No. of particles | No. of simulated particles
-global          nrho ${numberDensity} fnum ${numberSimulated}
+global          nrho ${numberDensity} fnum ${Wp}
 
 # species properties loading
 species         collisionProperties/marsAtmosphere.species CO2 N2
@@ -47,7 +47,7 @@ mixture		atmoMars N2  	frac 0.03				                # N2 fraction
 
 # SURFACE PROPERTIES SETUP
 # surface loading and rotation
-read_surf       geometry/orion_scaled.data origin 0.0 0.0 0.0 rotate ${thetaAngle} 0 1 0 #this geometry has different axes
+read_surf       geometry/orion_scaled.data origin 0.0 0.0 0.0 rotate -${thetaAngle} 0 1 0 #this geometry has different axes
 
 # COLLISION PROPERTIES
 # surface collision properties
@@ -133,6 +133,9 @@ shell 		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}
 shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/force
 shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/forceAverage
 shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/parcelsImage
+# added flowfield and grid folder
+shell           mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/fField
+shell           mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/GRID
 
 # drag force storage
 dump		dataDumpForce 			surf all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/force/xForce.* 				c_FORCEs[1]     c_FORCEs[2] 
@@ -165,3 +168,22 @@ if '${xForceNewTol} > ${tol} && ${yForceNewTol} > ${tol}' then &
     'variable fyTOTprev equal ${fyTOTnew}'                     &
     'jump SELF checkConvergenceLabel'                          &
 else "print '--- CONVERGENCE REACHED ---'"                                          
+
+#compute and dump interesting quantity
+compute          n         grid            all   atmoMars    n
+compute          temp_tra  thermal/grid    all   atmoMars    temp
+compute          vel       grid            all   atmoMars    u v w
+
+#compute just translational temperature and number density for the moment
+fix              avg_n           ave/grid   all  10 100 1000 c_n[*]         ave running
+fix              avg_temp_tra    ave/grid   all  10 100 1000 c_temp_tra[*]     ave running
+fix              avg_vel         ave/grid   all  10 100 1000 c_vel[*]          ave running
+
+#save grid and dump file
+
+write_grid       ./dump/Kn${iK}/Ma${iM}/AOA${iA}/GRID/parent_grid
+
+dump             dumpall  grid   all  1000 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/fField/flow_field.* id proc f_avg_n &
+                 f_avg_temp_tra    f_avg_vel[*] 
+
+run 1000
