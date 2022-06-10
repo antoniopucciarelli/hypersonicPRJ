@@ -91,7 +91,7 @@ variable iK loop ${nKnudsen}
 				# Knudsen number 
 				variable	KnudsenNumber	equal 	${minKnudsen}+(${maxKnudsen}-${minKnudsen})/${nKnudsen}*${iK}
 				# number density -- pre-shock
-				variable	numberDensity	equal	1.0/(${KnudsenNumber}*${L}*PI*${N2diameter}^2)
+				variable	numberDensity	equal	1.0/(sqrt(2)*${KnudsenNumber}*${L}*PI*${N2diameter}^2)
 				# number of simulated particles -- pre-shock
 				variable	numberSimulated equal 	${numberDensity}/${Wp}
 				# number density -- post-shock

@@ -89,14 +89,25 @@ stats_style     step cpu c_forceTOT[1] c_forceTOT[2]
 # doing the first run of the case in order to get a first approximation of the total drag force 
 run     2000 
 
-# grid adaptation
-fix     adaptgrid adapt 500 all refine particle 50 1
+#grid adaptation based on the number of particles
+compute          nrho      grid            all   atmoMars    nrho
+compute          temp_tra  thermal/grid    all   atmoMars    temp
 
-# running again for the grid adaptation
-run     1000
+fix              avg_nrho        ave/grid   all  10 100 1000 c_nrho[*]         ave one
+fix              avg_temp_tra    ave/grid   all  10 100 1000 c_temp_tra[*]     ave one
 
-# unfixing grid 
-unfix   adaptgrid
+compute          mfp       lambda/grid     f_avg_nrho[*] f_avg_temp_tra[*] N2 kall
+fix              avg_mfp   ave/grid        all  1 1 1000 c_mfp[*] ave one
+
+fix              adaptgrid adapt 1000 all refine coarsen value f_avg_mfp[2] 0.2 0.9 thresh less more #maxlevel 20
+
+run	 3000
+# unfixing unused quantities
+unfix            avg_nrho
+unfix            avg_temp_tra
+unfix            avg_mfp
+uncompute        mfp
+unfix            adaptgrid
 
 # SOLVING CASE WITH ITERATIVE PROCEDURE 
 # setting up convergence study parameters
@@ -171,7 +182,7 @@ else "print '--- CONVERGENCE REACHED ---'"
 
 #compute and dump interesting quantity
 compute          n         grid            all   atmoMars    n
-compute          temp_tra  thermal/grid    all   atmoMars    temp
+#computed above -> compute          temp_tra  thermal/grid    all   atmoMars    temp
 compute          vel       grid            all   atmoMars    u v w
 
 #compute just translational temperature and number density for the moment
@@ -186,4 +197,4 @@ write_grid       ./dump/Kn${iK}/Ma${iM}/AOA${iA}/GRID/parent_grid
 dump             dumpall  grid   all  1000 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/fField/flow_field.* id proc f_avg_n &
                  f_avg_temp_tra    f_avg_vel[*] 
 
-run 1000
+run 10000
