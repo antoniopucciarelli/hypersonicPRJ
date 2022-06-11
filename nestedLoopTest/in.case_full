@@ -96,18 +96,28 @@ compute          temp_tra  thermal/grid    all   atmoMars    temp
 fix              avg_nrho        ave/grid   all  10 100 1000 c_nrho[*]         ave one
 fix              avg_temp_tra    ave/grid   all  10 100 1000 c_temp_tra[*]     ave one
 
-compute          mfp       lambda/grid     f_avg_nrho[*] f_avg_temp_tra[*] N2 kall
+compute          mfp       lambda/grid     f_avg_nrho[*] f_avg_temp_tra[*] CO2 kall
 fix              avg_mfp   ave/grid        all  1 1 1000 c_mfp[*] ave one
 
-fix              adaptgrid adapt 1000 all refine coarsen value f_avg_mfp[2] 0.2 0.9 thresh less more #maxlevel 20
+#define the knudsen for refining and coarsening
+variable	 minMfp		equal		${meanFreePathFS}/2
+variable         maxMfp          equal           ${meanFreePathFS}*2
+
+# when the mean free path is smaller than the infinite(half) -> refine bigger coasen(twice)
+fix              adaptgrid adapt 1000 all refine coarsen value f_avg_mfp[2] ${minMfp} ${maxMfp} thresh less more
+# ISSUE HERE WHEN IT COARSEN THE GRID BEHIND THE BODY(MEAN FREE PATH REALLY BIG DUE TO LESS PARTICLE) -> IT CRASHES BEACUSE HUGE CELLS CANNOT
+# FOLLOW THE DETAILS OF THE GEOMETRY
 
 run	 3000
+
 # unfixing unused quantities
 unfix            avg_nrho
 unfix            avg_temp_tra
 unfix            avg_mfp
 uncompute        mfp
 unfix            adaptgrid
+#unfix            refinegrid
+#unfix		 coarsengrid
 
 # SOLVING CASE WITH ITERATIVE PROCEDURE 
 # setting up convergence study parameters
@@ -195,6 +205,6 @@ fix              avg_vel         ave/grid   all  10 100 1000 c_vel[*]          a
 write_grid       ./dump/Kn${iK}/Ma${iM}/AOA${iA}/GRID/parent_grid
 
 dump             dumpall  grid   all  1000 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/fField/flow_field.* id proc f_avg_n &
-                 f_avg_temp_tra    f_avg_vel[*] 
+                 f_avg_temp_tra    f_avg_vel[*]
 
 run 10000
