@@ -8,8 +8,12 @@ data_rho = np.loadtxt('martian_rho.dat',
 #altitude
 data_h   = np.loadtxt('altitude_time.dat',
                      delimiter=';')
-#valocity
-data_v  = np.loadtxt('Descending_velocity.dat',
+#velocity
+data_Dv  = np.loadtxt('Descending_velocity.dat',
+                     delimiter=';')
+data_Ev  = np.loadtxt('E_velocity.dat',
+                     delimiter=';')
+data_Nv  = np.loadtxt('N_velocity.dat',
                      delimiter=';')
 #temperature
 data_T  = np.loadtxt('Temperature.dat',
@@ -42,19 +46,44 @@ plt.show()
 
 #velocity
 plt.figure(4)
-plt.plot(data_v[:,0],data_v[:,1])
-plt.title("Velocity time")
+plt.plot(data_Dv[:,0],data_Dv[:,1])
+plt.title("Descending velocity")
 plt.xlabel("Time [s]")
 plt.ylabel("Velocity [km/s]")
 plt.show()
+
+plt.figure(4)
+plt.plot(data_Nv[:,0],data_Nv[:,1])
+plt.title("N velocity")
+plt.xlabel("Time [s]")
+plt.ylabel("Velocity [km/s]")
+plt.show()
+
+plt.figure(4)
+plt.plot(data_Ev[:,0],data_Ev[:,1])
+plt.title("E velocity")
+plt.xlabel("Time [s]")
+plt.ylabel("Velocity [km/s]")
+plt.show()
+
 
 #range from -13 to 250 s -> interpolate this one
 time_vect = np.linspace(2, 250, 1000)
 #%% interpolating velocity and altitude
 # velocity piecewise linear interpolation with time
-f_v = interpolate.interp1d(data_v[:,0], data_v[:,1])
+f_Dv = interpolate.interp1d(data_Dv[:,0], data_Dv[:,1])
 #evaluating the function in time_vect -> conversion in m/s
-v_vect = f_v(time_vect)*1000 #converted in m/s
+Dv_vect = f_Dv(time_vect)*1000 #converted in m/s
+
+f_Ev = interpolate.interp1d(data_Ev[:,0], data_Ev[:,1])
+#evaluating the function in time_vect -> conversion in m/s
+Ev_vect = f_Ev(time_vect)*1000 #converted in m/s
+
+f_Nv = interpolate.interp1d(data_Nv[:,0], data_Nv[:,1])
+#evaluating the function in time_vect -> conversion in m/s
+Nv_vect = f_Nv(time_vect)*1000 #converted in m/s
+
+v_vect = np.sqrt(Dv_vect**2+Nv_vect**2+Ev_vect**2)
 # the same is done for the altitude
 f_h = interpolate.interp1d(data_h[:,0], data_h[:,1])
 # vector h_vect
@@ -108,7 +137,7 @@ YN2   = 0.03
 d = 4.1E-10
 
 #gas nummber density(number of particles per m^3)
-n_vect = rho_vect/(YCO2*mmCO2+YN2*mmN2)
+n_vect = (rho_vect*YCO2)/mmCO2+(rho_vect*YN2)/mmN2
 
 mfp_vect = 1/(np.sqrt(2)*n_vect*np.pi*d**2)
 
@@ -118,8 +147,8 @@ KN_vect  = mfp_vect/L
 #plot KN variation in respect to altitude
 
 plt.figure(9)
-plt.semilogx(n_vect,h_vect)
-plt.title("Number density")
+plt.semilogx(mfp_vect,h_vect)
+plt.title("Mean free path")
 plt.xlabel("n")
 plt.ylabel("Altitude [km]")
 plt.show()
