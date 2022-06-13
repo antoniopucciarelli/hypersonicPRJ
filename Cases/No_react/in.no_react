@@ -3,17 +3,17 @@
 # Define variables
 # ################
 
-variable         x_min  equal  -5.0     # [m]
-variable         x_max  equal   5.0     # [m]
+variable         x_min  equal  -2.5     # [m]
+variable         x_max  equal   5     # [m]
 variable         y_min  equal   0.0     # [m]
-variable         y_max  equal   2.5     # [m]
+variable         y_max  equal   5     # [m]
 variable         z_min  equal  -0.0005  # [m] 
 variable         z_max  equal   0.0005  # [m]
 
 variable         Nx     equal  30
 variable         Ny     equal  25
 
-variable         Fnum   equal  1.5e16
+variable         Fnum   equal  1.5e18
 
 variable         n_FS   equal  2.0E20  # [1/m3]
 variable         Vx_FS  equal  5000.0  # [m/s]
