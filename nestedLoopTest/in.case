@@ -42,8 +42,8 @@ species         collisionProperties/marsAtmosphere.species CO2 N2
 
 # mixture properties declaration
 mixture     atmoMars CO2 N2 vstream ${Uflow} 0.0 0.0 temp ${Tflow} 	# name | molecules | speed | temperature 
-mixture		atmoMars CO2 	frac 0.97				                # CO2 fraction
-mixture		atmoMars N2  	frac 0.03				                # N2 fraction
+mixture		atmoMars CO2 	frac 0.9537				                # CO2 molar fraction
+mixture		atmoMars N2  	frac 0.0463				                # N2 molar fraction
 
 # SURFACE PROPERTIES SETUP
 # surface loading and rotation
@@ -51,8 +51,8 @@ read_surf       geometry/data.orionSimple origin 0.0 0.0 0.0 rotate -${thetaAngl
 
 # COLLISION PROPERTIES
 # surface collision properties
-surf_collide    surfCollision diffuse 1500.0 1.0
-surf_modify     all collide surfCollision
+surf_collide    surfCollision   diffuse 1500.0 1.0
+surf_modify     all             collide surfCollision
 
 # molecule(s)/molecule(s) collision properties
 collide 	    vss         atmoMars collisionProperties/marsAtmosphere.vss
@@ -60,7 +60,7 @@ collide_modify	vibrate     smooth
 
 # REACTION SETUP
 # problem set as non reactive
-react		none
+react		    none
 
 # INJECTION SETUP
 # due to flow speed and thermal speed -> flow only from x[+ve], y[-ve], y[+ve], z[-ve] and z[+ve]
@@ -71,32 +71,52 @@ timestep        ${dt}
 
 # PROPERTIES COMPUTATION
 # force all over the surface 
-compute         FORCEs      surf        all all             fx fy	                    # x|y direction 
+compute         FORCEs      surf        all all             fx fy	                        # x|y direction 
+
+# heat flux computation
+compute         heatFlux	surf        all all             etot                            # heat flux on the whole body
 
 # summing up all the forces and average them
-fix             forceAVE    ave/surf    all 1 10 100        c_FORCEs[*] ave one         # average x|y direction 
+fix             forceAVE    ave/surf    all 1 10 100        c_FORCEs[*]     ave one         # average x|y direction 
+
+# summing up all the heat flux and average them 
+fix		        heatAVE     ave/surf    all 1 10 100	    c_heatFlux[*]   ave one         # average heat flux 
 
 # sum of the average forces 
-compute         forceTOT    reduce      sum                 f_forceAVE[1] f_forceAVE[2] # total x|y direction 
+compute         forceTOT    reduce      sum                 f_forceAVE[1] f_forceAVE[2]     # total x|y direction 
+
+# sum of the average forces 
+compute         heatTOT     reduce      sum                 f_heatAVE                       # total heat flux 
 
 # PLOTTING/PRINTING PROPERTIES
 # every 100 time steps
 stats           100     
 
 # output setup
-stats_style     step cpu c_forceTOT[1] c_forceTOT[2]
+stats_style     step cpu c_forceTOT[1] c_forceTOT[2] c_heatTOT
 
 # doing the first run of the case in order to get a first approximation of the total drag force 
-run     2000 
+run     300 
+
+# main properties computation related to particles vs. grid and temperature vs. grid 
+compute          nrho               grid            all     atmoMars    nrho
+compute          temp_tra           thermal/grid    all     atmoMars    temp
+
+# computing average 
+fix              avg_nrho           ave/grid        all     10 100 1000 c_nrho[*]         ave one
+fix              avg_temp_tra       ave/grid        all     10 100 1000 c_temp_tra[*]     ave one
+
+# define the region where to refine/coarsen
+region  adaptreg    cylinder x 0.0 0.0 2.5 0 10 side out
 
 # grid adaptation
-fix     adaptgrid adapt 500 all refine particle 50 1
+fix     adaptgrid   adapt 200 all refine particle 50 1
 
 # running again for the grid adaptation
-run     1000
+run     400
 
 # unfixing grid 
-unfix   adaptgrid
+unfix   adaptgrid 
 
 # SOLVING CASE WITH ITERATIVE PROCEDURE 
 # setting up convergence study parameters
@@ -112,10 +132,16 @@ print " "
 # PROPERTIES COMPUTATION
 
 # summing up all the forces and average them
-fix         forceAVE2      ave/surf    all 1 10 100     c_FORCEs[*] ave running 
+fix         forceAVE2       ave/surf    all 1 10 100    c_FORCEs[*]     ave running 
+
+# summing up all the heat flux and average them
+fix         heatAVE2        ave/surf    all 1 10 100    c_heatFlux[*]   ave running
 
 # sum of the average forces 
-compute     forceTOT2      reduce      sum              f_forceAVE2[1] f_forceAVE2[2]
+compute     forceTOT2      reduce       sum             f_forceAVE2[1] f_forceAVE2[2]
+
+# sum of the average heat flux 
+compute     heatTOT2      reduce        sum             f_heatAVE2
 
 # total force computation
 variable    fxTOTnew    equal       c_forceTOT2[1]  
@@ -133,6 +159,8 @@ shell 		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}
 shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/force
 shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/forceAverage
 shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/parcelsImage
+shell       mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/GRID
+shell       mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/flowField
 
 # drag force storage
 dump		dataDumpForce 			surf all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/force/xForce.* 				c_FORCEs[1]     c_FORCEs[2] 
@@ -143,7 +171,7 @@ dump       	figureDump              image all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA
                                     type type pdiam 0.01 surf proc 0.01 size 512 512 zoom 1.75 gline no 0.005 
 
 # statistics printout 
-stats_style     step cpu   v_fxTOTnew   v_fyTOTnew
+stats_style     step cpu   v_fxTOTnew   v_fyTOTnew   c_heatTOT2
 
 # run case
 run         400
@@ -159,9 +187,28 @@ variable yForceNewTol   equal abs((${fyTOTnew}-${fyTOTprev})/${fyTOTnew})
 print '--- xForceNewTol   = ${xForceNewTol}'
 print '--- yForceNewTol   = ${yForceNewTol}'
 
-#check convergence
+# check convergence
 if '${xForceNewTol} > ${tol} && ${yForceNewTol} > ${tol}' then &
     'variable fxTOTprev equal ${fxTOTnew}'                     &
     'variable fyTOTprev equal ${fyTOTnew}'                     &
     'jump SELF checkConvergenceLabel'                          &
 else "print '--- CONVERGENCE REACHED ---'"                                          
+
+# compute post-processing main quantities
+compute          n         grid            all   atmoMars    n
+compute          vel       grid            all   atmoMars    u v w
+
+# compute translational temperature and number density for the moment
+fix              avg_n           ave/grid   all  10 100 1000 c_n[*]             ave running
+fix              avg_temp_tra    ave/grid   all  10 100 1000 c_temp_tra[*]      ave running
+fix              avg_vel         ave/grid   all  10 100 1000 c_vel[*]           ave running
+
+# save grid and dump file
+write_grid       ./dump/Kn${iK}/Ma${iM}/AOA${iA}/GRID/parentGrid
+
+dump             dumpall  grid   all  1000 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/flowField/flowField.* id proc f_avg_n &
+                 f_avg_temp_tra f_avg_vel[*]
+
+run 1000
+
+undump          dumpall

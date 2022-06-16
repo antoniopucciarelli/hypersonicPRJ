@@ -2,4 +2,4 @@
 
 pvpython stl2surf.py geometry/orion_simple.stl geometry/data.orionSimple
 
-mpirun -np 4 ./spa_mpi -in in.plate
+mpirun -np 4 ./spa_mpi -in in.capsule
