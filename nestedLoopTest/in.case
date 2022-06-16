@@ -27,7 +27,7 @@ boundary        oo oo oo
 create_box      ${xMin} ${xMax} ${yMin} ${yMax} ${zMin} ${zMax}
 
 # grid generation 
-create_grid     ${xNcells} ${yNcells} 1
+create_grid     ${xNcells} ${yNcells} ${zNcells}
 
 # parallel computing settings
 balance_grid    rcb part
@@ -35,7 +35,7 @@ fix             loadbalance balance 1000 1.1 rcb part
 
 # SETTING UP PARTICLES PROPERTIES
 # No. of particles | No. of simulated particles
-global          nrho ${numberDensity} fnum ${numberSimulated}
+global          nrho ${numberDensity} fnum ${Wp}
 
 # species properties loading
 species         collisionProperties/marsAtmosphere.species CO2 N2
@@ -44,6 +44,8 @@ species         collisionProperties/marsAtmosphere.species CO2 N2
 mixture     atmoMars CO2 N2 vstream ${Uflow} 0.0 0.0 temp ${Tflow} 	# name | molecules | speed | temperature 
 mixture		atmoMars CO2 	frac 0.9537				                # CO2 molar fraction
 mixture		atmoMars N2  	frac 0.0463				                # N2 molar fraction
+mixture          m_CO2   CO2
+mixture          m_N2   N2
 
 # SURFACE PROPERTIES SETUP
 # surface loading and rotation
@@ -96,24 +98,16 @@ stats           100
 stats_style     step cpu c_forceTOT[1] c_forceTOT[2] c_heatTOT
 
 # doing the first run of the case in order to get a first approximation of the total drag force 
-run     300 
-
-# main properties computation related to particles vs. grid and temperature vs. grid 
-compute          nrho               grid            all     atmoMars    nrho
-compute          temp_tra           thermal/grid    all     atmoMars    temp
-
-# computing average 
-fix              avg_nrho           ave/grid        all     10 100 1000 c_nrho[*]         ave one
-fix              avg_temp_tra       ave/grid        all     10 100 1000 c_temp_tra[*]     ave one
+run     2000 
 
 # define the region where to refine/coarsen
 region  adaptreg    cylinder x 0.0 0.0 2.5 0 10 side out
 
 # grid adaptation
-fix     adaptgrid   adapt 200 all refine particle 50 1
+fix     adaptgrid   adapt 1000 all refine particle 50 1
 
 # running again for the grid adaptation
-run     400
+run     3000
 
 # unfixing grid 
 unfix   adaptgrid 
@@ -197,17 +191,24 @@ else "print '--- CONVERGENCE REACHED ---'"
 # compute post-processing main quantities
 compute          n         grid            all   atmoMars    n
 compute          vel       grid            all   atmoMars    u v w
+compute          nrho      grid            all     atmoMars    nrho
+compute          nrho_CO2   grid            all   m_CO2    nrho
+compute          nrho_N2   grid            all   m_N2    nrho
+compute          temp_tra  thermal/grid    all     atmoMars    temp
 
 # compute translational temperature and number density for the moment
-fix              avg_n           ave/grid   all  1 10 100 c_n[*]             ave running
-fix              avg_temp_tra    ave/grid   all  1 10 100 c_temp_tra[*]      ave running
-fix              avg_vel         ave/grid   all  1 10 100 c_vel[*]           ave running
+fix              avg_n           ave/grid   all  10 100 1000 c_n[*]             ave running
+fix              avg_temp_tra    ave/grid   all  10 100 1000 c_temp_tra[*]      ave running
+fix              avg_vel         ave/grid   all  10 100 1000 c_vel[*]           ave running
+fix              avg_nrho           ave/grid   all  10 100 1000 c_nrho[*]             ave running
+fix              avg_nrho_CO2        ave/grid   all  10 100 1000 c_nrho_CO2[*]   ave running
+fix              avg_nrho_N2        ave/grid   all  10 100 1000 c_nrho_N2[*]   ave running
 
 # save grid and dump file
 write_grid       ./dump/Kn${iK}/Ma${iM}/AOA${iA}/GRID/parentGrid
 
-dump             dumpall  grid   all  100 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/flowField/flowField.* id proc f_avg_n f_avg_temp_tra f_avg_vel[*]
+dump             dumpall  grid   all  1000 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/flowField/flowField.* id proc f_avg_n f_avg_nrho f_avg_nrho_CO2 f_avg_nrho_N2 f_avg_temp_tra f_avg_vel[*]
 
-run 1000
+run 10000
 
 undump          dumpall
