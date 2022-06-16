@@ -41,8 +41,8 @@ variable        Rmixt           equal   192.11                  # averaged gas c
 variable	NumberSimCell		equal	20				# number of parcels for every number density
 
 # setting up simulation study values for a proper time/space analysis of the hypersonic flow 
-variable	Nlam		equal	4				# space 
-variable	Ntau		equal	4				# time 
+variable	Nlam		equal	5				# space 
+variable	Ntau		equal	5				# time 
 
 # setting up domain properties
 variable	L			equal 	5				# reference length 

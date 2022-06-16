@@ -49,7 +49,7 @@ mixture          m_N2   N2
 
 # SURFACE PROPERTIES SETUP
 # surface loading and rotation
-read_surf       geometry/data.orionSimple origin 0.0 0.0 0.0 rotate 180-${thetaAngle} 0 0 1
+read_surf       geometry/data.orionSimple origin 0.0 0.0 0.0 rotate 180-${thetaAngle} 0 0 1 trans 1 0 0
 
 # COLLISION PROPERTIES
 # surface collision properties
@@ -104,7 +104,7 @@ run     2000
 region  adaptreg    cylinder x 0.0 0.0 2.5 0 10 side out
 
 # grid adaptation
-fix     adaptgrid   adapt 1000 all refine particle 50 1
+fix     adaptgrid   adapt 1000 all refine particle 30 1
 
 # running again for the grid adaptation
 run     3000
@@ -112,6 +112,12 @@ run     3000
 # unfixing grid 
 unfix   adaptgrid 
 
+#adapting the grid near surface
+fix     adaptgrid   adapt 1000 all refine surf all 0.01 #not smaller than 1 cm
+
+run 3000
+
+unfix adaptgrid
 # SOLVING CASE WITH ITERATIVE PROCEDURE 
 # setting up convergence study parameters
 variable    fxTOTprev  equal   0.0
@@ -194,7 +200,7 @@ compute          vel       grid            all   atmoMars    u v w
 compute          nrho      grid            all     atmoMars    nrho
 compute          nrho_CO2   grid            all   m_CO2    nrho
 compute          nrho_N2   grid            all   m_N2    nrho
-compute          temp_tra  thermal/grid    all     atmoMars    temp
+compute          temp_tra  thermal/grid    all   atmoMars    temp
 
 # compute translational temperature and number density for the moment
 fix              avg_n           ave/grid   all  10 100 1000 c_n[*]             ave running
@@ -203,6 +209,7 @@ fix              avg_vel         ave/grid   all  10 100 1000 c_vel[*]           
 fix              avg_nrho           ave/grid   all  10 100 1000 c_nrho[*]             ave running
 fix              avg_nrho_CO2        ave/grid   all  10 100 1000 c_nrho_CO2[*]   ave running
 fix              avg_nrho_N2        ave/grid   all  10 100 1000 c_nrho_N2[*]   ave running
+
 
 # save grid and dump file
 write_grid       ./dump/Kn${iK}/Ma${iM}/AOA${iA}/GRID/parentGrid
