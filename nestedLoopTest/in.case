@@ -47,7 +47,7 @@ mixture		atmoMars N2  	frac 0.0463				                # N2 molar fraction
 
 # SURFACE PROPERTIES SETUP
 # surface loading and rotation
-read_surf       geometry/data.orionSimple origin 0.0 0.0 0.0 rotate -${thetaAngle} 0 0 1
+read_surf       geometry/data.orionSimple origin 0.0 0.0 0.0 rotate 180-${thetaAngle} 0 0 1
 
 # COLLISION PROPERTIES
 # surface collision properties
@@ -156,11 +156,11 @@ shell 		mkdir dump
 shell 		mkdir dump/Kn${iK}
 shell		mkdir dump/Kn${iK}/Ma${iM}
 shell 		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}
+shell       mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/GRID
 shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/force
+shell       mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/flowField
 shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/forceAverage
 shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/parcelsImage
-shell       mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/GRID
-shell       mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/flowField
 
 # drag force storage
 dump		dataDumpForce 			surf all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/force/xForce.* 				c_FORCEs[1]     c_FORCEs[2] 
@@ -199,15 +199,14 @@ compute          n         grid            all   atmoMars    n
 compute          vel       grid            all   atmoMars    u v w
 
 # compute translational temperature and number density for the moment
-fix              avg_n           ave/grid   all  10 100 1000 c_n[*]             ave running
-fix              avg_temp_tra    ave/grid   all  10 100 1000 c_temp_tra[*]      ave running
-fix              avg_vel         ave/grid   all  10 100 1000 c_vel[*]           ave running
+fix              avg_n           ave/grid   all  1 10 100 c_n[*]             ave running
+fix              avg_temp_tra    ave/grid   all  1 10 100 c_temp_tra[*]      ave running
+fix              avg_vel         ave/grid   all  1 10 100 c_vel[*]           ave running
 
 # save grid and dump file
 write_grid       ./dump/Kn${iK}/Ma${iM}/AOA${iA}/GRID/parentGrid
 
-dump             dumpall  grid   all  1000 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/flowField/flowField.* id proc f_avg_n &
-                 f_avg_temp_tra f_avg_vel[*]
+dump             dumpall  grid   all  100 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/flowField/flowField.* id proc f_avg_n f_avg_temp_tra f_avg_vel[*]
 
 run 1000
 

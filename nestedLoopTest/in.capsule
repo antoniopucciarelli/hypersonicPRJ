@@ -37,7 +37,7 @@ variable	N2mass		equal	4.65E-26		# averaged mixture weight
 variable	N2diameter	equal	4.17E-10		# averaged mixture molecule dimension
 
 # setting up scaling value for the parcels reduction study 
-variable	Wp		equal	100					# number of parcels for every number density
+variable	Wp			equal	100				# number of parcels for every number density
 
 # setting up simulation study values for a proper time/space analysis of the hypersonic flow 
 variable	Nlam		equal	4				# space 
@@ -113,7 +113,7 @@ variable iK loop ${nKnudsen}
 				# getting cell properties
 				variable	xNcells		equal	round((${xMax}-${xMin})/${ds}) 	# x direction	
 				variable	yNcells		equal   round((${yMax}-${yMin})/${ds})	# y direction
-				variable        zNcells         equal   round((${zMax}-${zMin})/${ds})  # z direction 
+				variable    zNcells     equal   round((${zMax}-${zMin})/${ds})  # z direction 
 
 				# printing values
 				print " "
