@@ -14,7 +14,7 @@ variable	nMach		equal	1				# Mach
 variable	nAOA		equal	1				# angle of attack 
 
 # setting up mixture properties
-variable	gammaMixture	equal	5/3			# specific heat ratio		
+variable	gammaMixture	equal	1.289			# specific heat ratio		
 variable	boltzConstant	equal   1.38E-23	# Boltzmann constant declaration
 
 # setting up Mach number interval extremes
@@ -30,7 +30,7 @@ variable	minAOA		equal	0				# minimum angle of attack
 variable	maxAOA		equal	30				# maximum angle of attack 
 
 # setting up flow temperature
-variable	Tflow		equal	3000
+variable	Tflow		equal	300
 
 # setting up flow mean properties
 variable	N2mass		equal	4.65E-26		# averaged mixture weight	
@@ -40,8 +40,8 @@ variable	N2diameter	equal	4.17E-10		# averaged mixture molecule dimension
 variable	NumberSimCell		equal	20					# number of parcels for every number density
 
 # setting up simulation study values for a proper time/space analysis of the hypersonic flow 
-variable	Nlam		equal	5				# space 
-variable	Ntau		equal	5				# time 
+variable	Nlam		equal	4				# space 
+variable	Ntau		equal	4				# time 
 
 # setting up domain properties
 variable	L			equal 	5				# reference length 
@@ -108,7 +108,7 @@ variable iK loop ${nKnudsen}
 				variable	dt		equal 	${timeInterval}/${Ntau}  
 				# simulation space interval -- using post-shock conditions and the engineering/simulation relaxation 
 				#divided by 2 to model properly the geometry
-				variable	ds 		equal 	${meanFreePathFS}/${Nlam}/2
+				variable	ds 		equal 	${meanFreePathFS}/${Nlam}
 				#compute true number of particles in each cell -> 3D multiply per 3 dimension
 				#SET TO FREESTREAM CONDITION -> if it doesn't satisfy  change it
                                 variable        NumberTrueCell  equal   ${numberDensity}*${ds}*${ds}*${ds}

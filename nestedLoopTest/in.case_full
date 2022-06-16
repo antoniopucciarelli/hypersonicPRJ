@@ -42,8 +42,8 @@ species         collisionProperties/marsAtmosphere.species CO2 N2
 
 # mixture properties declaration
 mixture     atmoMars CO2 N2 vstream ${Uflow} 0.0 0.0 temp ${Tflow} 	# name | molecules | speed | temperature 
-mixture		atmoMars CO2 	frac 0.97				                # CO2 fraction
-mixture		atmoMars N2  	frac 0.03				                # N2 fraction
+mixture		atmoMars CO2 	frac 0.9537 #molar one			                # CO2 fraction
+mixture		atmoMars N2  	frac 0.0463				                # N2 fraction
 
 # SURFACE PROPERTIES SETUP
 # surface loading and rotation
@@ -51,7 +51,7 @@ read_surf       geometry/orion_scaled.data origin 0.0 0.0 0.0 rotate -${thetaAng
 
 # COLLISION PROPERTIES
 # surface collision properties
-surf_collide    surfCollision diffuse 1500.0 1.0
+surf_collide    surfCollision diffuse 1500.0 1.0 #metal -> so accomodation coeffcients = 1
 surf_modify     all collide surfCollision
 
 # molecule(s)/molecule(s) collision properties
@@ -72,19 +72,20 @@ timestep        ${dt}
 # PROPERTIES COMPUTATION
 # force all over the surface 
 compute         FORCEs      surf        all all             fx fz	                    # x|z direction 
-
+# compute heat flux 
+compute heat_flux		surf          all  all  etot
 # summing up all the forces and average them
 fix             forceAVE    ave/surf    all 1 10 100        c_FORCEs[*] ave one         # average x|y direction 
-
+fix		heatAVE     ave/surf    all 1 10 100	    c_heat_flux[*] ave one
 # sum of the average forces 
 compute         forceTOT    reduce      sum                 f_forceAVE[1] f_forceAVE[2] # total x|y direction 
-
+compute		heatTOT     reduce      sum		    f_heatAVE[*]
 # PLOTTING/PRINTING PROPERTIES
 # every 100 time steps
 stats           100     
 
 # output setup
-stats_style     step cpu c_forceTOT[1] c_forceTOT[2]
+stats_style     step cpu c_forceTOT[1] c_forceTOT[2] c_heatTOT
 
 # doing the first run of the case in order to get a first approximation of the total drag force 
 run     2000 
@@ -100,11 +101,14 @@ compute          mfp       lambda/grid     f_avg_nrho[*] f_avg_temp_tra[*] CO2 k
 fix              avg_mfp   ave/grid        all  1 1 1000 c_mfp[*] ave one
 
 #define the knudsen for refining and coarsening
-variable	 minMfp		equal		${meanFreePathFS}/2
-variable         maxMfp          equal           ${meanFreePathFS}*2
+variable	 minMfp		equal		${meanFreePathFS}*2
+variable         maxMfp          equal           ${meanFreePathFS}*200
+
+# define the region where to refine/coarsen
+region      adaptreg sphere 5.0 0.0 0.0 5 side out
 
 # when the mean free path is smaller than the infinite(half) -> refine bigger coasen(twice)
-fix              adaptgrid adapt 1000 all refine coarsen value f_avg_mfp[2] ${minMfp} ${maxMfp} thresh less more
+fix              adaptgrid adapt 1000 all refine coarsen value f_avg_mfp[2] ${minMfp} ${maxMfp} thresh less more region adaptreg one
 # ISSUE HERE WHEN IT COARSEN THE GRID BEHIND THE BODY(MEAN FREE PATH REALLY BIG DUE TO LESS PARTICLE) -> IT CRASHES BEACUSE HUGE CELLS CANNOT
 # FOLLOW THE DETAILS OF THE GEOMETRY
 
@@ -134,9 +138,11 @@ print " "
 
 # summing up all the forces and average them
 fix         forceAVE2      ave/surf    all 1 10 100     c_FORCEs[*] ave running 
+fix             heatAVE2     ave/surf    all 1 10 100        c_heat_flux[*] ave running
 
 # sum of the average forces 
 compute     forceTOT2      reduce      sum              f_forceAVE2[1] f_forceAVE2[2]
+compute     heatTOT2      reduce      sum              f_heatAVE2[*]
 
 # total force computation RAF: fy remains the lift(it is computed as fz) and fx the drag
 variable    fxTOTnew    equal       c_forceTOT2[1]  
@@ -167,7 +173,7 @@ dump       	figureDump              image all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA
                                     type type pdiam 0.01 surf proc 0.01 size 512 512 zoom 1.75 gline no 0.005 
 
 # statistics printout 
-stats_style     step cpu   v_fxTOTnew   v_fyTOTnew
+stats_style     step cpu   v_fxTOTnew   v_fyTOTnew   c_heatTOT2
 
 # run case
 run         400
