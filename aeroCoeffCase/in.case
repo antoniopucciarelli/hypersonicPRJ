@@ -1,0 +1,261 @@
+# forces computation -> aerodynamic coefficients for different Kn, Ma & AOA
+# authors:
+#	antonio pucciarelli
+#	raffaele tirotta
+#
+# aim:
+# --- compute aerodynamic coefficient using DSMC
+#
+
+# INITIALIZING CASE
+# seed generation -> random properties for the simulation 
+seed            12345
+    
+# setting up simulation type 
+dimension       3
+    
+# setting up grid properties
+global          surfmax     100000
+global          splitmax    15
+global          gridcut     0.0 comm/sort yes 
+    
+# setting up boundary properties 
+boundary        oo oo oo
+
+# SETTING UP GRID 
+# study box generation
+create_box      ${xMin} ${xMax} ${yMin} ${yMax} ${zMin} ${zMax}
+
+# grid generation 
+create_grid     ${xNcells} ${yNcells} ${zNcells}
+
+# parallel computing settings
+balance_grid    rcb part
+fix             loadbalance balance 1000 1.1 rcb part
+
+# SETTING UP PARTICLES PROPERTIES
+# No. of particles | No. of simulated particles
+global          nrho ${numberDensity} fnum ${Wp}
+
+# species properties loading
+species         collisionProperties/marsAtmosphere.species CO2 N2
+
+# mixture properties declaration
+mixture     atmoMars    CO2 N2  vstream ${Uflow} 0.0 0.0 temp ${Tflow} 	# name | molecules | speed | temperature 
+mixture		atmoMars    CO2 	frac 0.9537				                # CO2 molar fraction
+mixture		atmoMars    N2  	frac 0.0463				                # N2 molar fraction
+mixture     m_CO2       CO2                                             # generation of a single mixture for the CO2 species properties tracking
+mixture     m_N2        N2                                              # generation of a single mixture for the N2 species properties tracking
+
+# SURFACE PROPERTIES SETUP
+# surface loading and rotation
+read_surf       geometry/data.orionSimple origin 0.0 0.0 0.0 rotate 180-${thetaAngle} 0 0 1 trans 1 0 0
+
+# COLLISION PROPERTIES
+# surface collision properties
+surf_collide    surfCollision   diffuse 1500.0 1.0
+surf_modify     all             collide surfCollision
+
+# molecule(s)/molecule(s) collision properties
+collide 	    vss         atmoMars collisionProperties/marsAtmosphere.vss
+collide_modify	vibrate     smooth
+
+# REACTION SETUP
+# problem set as non reactive
+react		    none
+
+# INJECTION SETUP
+# due to flow speed and thermal speed -> flow only from x[+ve], y[-ve], y[+ve], z[-ve] and z[+ve]
+fix fixInject   emit/face atmoMars xlo ylo yhi zlo zhi
+
+# TIME STEP DECLARATION
+timestep        ${dt}
+
+# PROPERTIES COMPUTATION
+# force all over the surface 
+compute         FORCEs      surf        all all             fx fy	                        # x|y direction 
+
+# heat flux computation
+compute         heatFlux	surf        all all             etot                            # heat flux on the whole body
+
+# summing up all the forces and average them
+fix             forceAVE    ave/surf    all 1 10 100        c_FORCEs[*]     ave one         # average x|y direction 
+
+# summing up all the heat flux and average them 
+fix		        heatAVE     ave/surf    all 1 10 100	    c_heatFlux[*]   ave one         # average heat flux 
+
+# sum of the average forces 
+compute         forceTOT    reduce      sum                 f_forceAVE[1] f_forceAVE[2]     # total x|y direction 
+
+# sum of the average forces 
+compute         heatTOT     reduce      sum                 f_heatAVE                       # total heat flux 
+
+# PLOTTING/PRINTING PROPERTIES
+# every 100 time steps
+stats           100     
+
+# output setup
+stats_style     step    cpu     c_forceTOT[1]   c_forceTOT[2]   c_heatTOT
+
+# doing the first run of the case in order to get a first approximation of the total drag force 
+run     2000 
+
+# define the region where to refine/coarsen
+region  adaptreg    cylinder x 0.0 0.0 2.5 0 10 side out                                    # axis | origin coords (y, z) | radius | height | side
+
+# grid adaptation
+fix     adaptgrid   adapt   1000 all refine particle 30 1                                   # whole system grid adaptation based on parcels number
+
+# running again for the grid adaptation
+run     3000
+
+# unfixing grid 
+unfix   adaptgrid 
+
+# adapting the grid near surface
+fix     adaptgrid   adapt   1000 all refine surf all 0.01 iterate 2                         # surface cells grid adaptation not smaller than 1 cm and 2 iterations on the mesh refinement -> no vector components for the surface elements check
+
+# running again with grid adaptation enabled close to the capsule surface
+run     3000
+
+# disable grid adaptation 
+unfix   adaptgrid
+
+# SOLVING CASE WITH ITERATIVE PROCEDURE 
+# setting up convergence study parameters
+variable    fxTOTprev  equal   0.0
+variable    fyTOTprev  equal   0.0
+variable    tol        equal   1E-1
+
+# printing variables 
+print " " 
+print "--- tol = ${tol}"
+print " "
+
+# PROPERTIES COMPUTATION
+
+# summing up all the forces and average them
+fix         forceAVE2       ave/surf    all 1 10 100    c_FORCEs[*]     ave running 
+
+# summing up all the heat flux and average them
+fix         heatAVE2       ave/surf     all 1 10 100    c_heatFlux[*]   ave running
+
+# sum of the average forces 
+compute     forceTOT2      reduce       sum             f_forceAVE2[1] f_forceAVE2[2]
+
+# sum of the average heat flux 
+compute     heatTOT2      reduce        sum             f_heatAVE2
+
+# total force computation
+variable    fxTOTnew      equal         c_forceTOT2[1]  
+variable    fyTOTnew      equal         c_forceTOT2[2]
+
+# PLOTTING/PRINTING PROPERTIES
+# directory generation for result storage
+shell 		mkdir dump
+shell 		mkdir dump/Kn${iK}
+shell		mkdir dump/Kn${iK}/Ma${iM}
+shell 		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}
+shell       mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/GRID
+shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/force
+shell       mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/flowField
+shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/forceAverage
+shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/parcelsImage
+shell       mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/heatFluxAverage
+
+# setting up label for the while loop 
+label checkConvergenceLabel
+
+# drag force storage
+dump		dataDumpForce 			surf all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/force/xyForce.* 		        	c_FORCEs[1]     c_FORCEs[2] 
+# averaged drag force storage
+dump 		dataDumpForceAverage 	surf all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/forceAverage/xyForceAverage.*  	f_forceAVE2[1]  f_forceAVE2[2]
+# averaged heat flux at capsule surface 
+dump        dataDumpHeatFluxAverage surf all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/heatFluxAverage/heatFluxAverage.*  f_heatAVE2
+# figure printout 
+dump       	figureDump              image all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/parcelsImage/image.*.ppm & 
+                                    type type pdiam 0.01 surf proc 0.01 size 512 512 zoom 1.75 gline no 0.005 
+
+# statistics printout 
+stats_style     step cpu   v_fxTOTnew   v_fyTOTnew   c_heatTOT2
+
+# run case
+run         400
+
+# undump command 
+undump      figureDump
+undump		dataDumpForce 
+undump		dataDumpForceAverage
+undump      dataDumpHeatFluxAverage
+
+# loop simulation results printout
+print '--- PRINTOUT' 
+print '--- fxTOTnew       = ${fxTOTnew}'
+print '--- fyTOTnew       = ${fyTOTnew}'
+variable xForceNewTol   equal abs((${fxTOTnew}-${fxTOTprev})/${fxTOTnew})
+variable yForceNewTol   equal abs((${fyTOTnew}-${fyTOTprev})/${fyTOTnew})
+print '--- xForceNewTol   = ${xForceNewTol}'
+print '--- yForceNewTol   = ${yForceNewTol}'
+
+# check convergence
+if '${xForceNewTol} > ${tol} && ${yForceNewTol} > ${tol}' then &
+    'variable fxTOTprev equal ${fxTOTnew}'                     &
+    'variable fyTOTprev equal ${fyTOTnew}'                     &
+    'jump SELF checkConvergenceLabel'                          &
+else "print '--- CONVERGENCE REACHED ---'"                                          
+
+# compute post-processing main quantities
+compute         n                  grid            all     atmoMars     n       # number of parcels
+compute         vel                grid            all     atmoMars     u v w   # velocity vector components 
+compute         nrho               grid            all     atmoMars     nrho    # number density of the whole mixture
+compute         nrho_CO2           grid            all     m_CO2        nrho    # number density of CO2 
+compute         nrho_N2            grid            all     m_N2         nrho    # number density of N2
+compute         traTemperatureMIX  thermal/grid    all     atmoMars     temp    # translational temperature of the whole mixture
+compute         traTemperatureCO2  thermal/grid    all     m_CO2        temp    # translational temperature of the CO2
+compute         traTemperatureN2   thermal/grid    all     m_N2         temp    # translational temperature of the N2 
+compute         vibTemperatureMIX  thermal/grid    all     atmoMars     tvib    # vibrational temperature of the whole mixture 
+compute         vibTemperatureCO2  thermal/grid    all     m_CO2        tvib    # vibrational temperature of CO2 
+compute         vibTemperatureN2   thermal/grid    all     m_N2         tvib    # vibrational temperature of N2 
+compute         vibTemperatureMIX  thermal/grid    all     atmoMars     trot    # rotational temperature of the whole mixture 
+compute         vibTemperatureCO2  thermal/grid    all     m_CO2        trot    # rotational temperature of CO2 
+compute         vibTemperatureN2   thermal/grid    all     m_N2         trot    # rotational temperature of N2 
+
+# compute translational temperature and number density for the moment
+# averaged number of parcels computation 
+fix             avg_n              ave/grid        all     10 100 1000  c_n[*]                  ave running
+# averaged mixture speed computation 
+fix             avg_vel            ave/grid        all     10 100 1000  c_vel[*]                ave running
+# averaged number density computation 
+fix             avg_nrho           ave/grid        all     10 100 1000  c_nrho[*]               ave running
+fix             avg_nrho_CO2       ave/grid        all     10 100 1000  c_nrho_CO2[*]           ave running
+fix             avg_nrho_N2        ave/grid        all     10 100 1000  c_nrho_N2[*]            ave running
+# averaged translational temperature computation 
+fix             avg_traTempMIX     ave/grid        all     10 100 1000  c_traTemperatureMIX[*]  ave running
+fix             avg_traTempCO2     ave/grid        all     10 100 1000  c_traTemperatureCO2[*]  ave running
+fix             avg_traTempN2      ave/grid        all     10 100 1000  c_traTemperatureN2[*]   ave running
+# averaged vibrational temperature computation 
+fix             avg_vibTempMIX     ave/grid        all     10 100 1000  c_vibTemperatureMIX[*]  ave running
+fix             avg_vibTempCO2     ave/grid        all     10 100 1000  c_vibTemperatureCO2[*]  ave running
+fix             avg_vibTempN2      ave/grid        all     10 100 1000  c_vibTemperatureN2[*]   ave running
+# averaged rotational temperature computation 
+fix             avg_rotTempMIX     ave/grid        all     10 100 1000  c_rotTemperatureMIX[*]  ave running
+fix             avg_rotTempCO2     ave/grid        all     10 100 1000  c_rotTemperatureCO2[*]  ave running
+fix             avg_rotTempN2      ave/grid        all     10 100 1000  c_rotTemperatureN2[*]   ave running
+
+# save grid and dump file
+write_grid      ./dump/Kn${iK}/Ma${iM}/AOA${iA}/GRID/parentGrid
+
+# dump setup 
+dump            dumpall  grid   all  1000 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/flowField/flowField.* id proc & 
+                f_avg_n                                             & 
+                f_avg_vel[*]                                        & 
+                f_avg_nrho       f_avg_nrho_CO2   f_avg_nrho_N2     &
+                f_avg_traTempMIX f_avg_traTempCO2 f_avg_traTempN2   & 
+                f_avg_vibTempMIX f_avg_vibTempCO2 f_avg_vibTempN2   &
+                f_avg_rotTempMIX f_avg_rotTempCO2 f_avg_rotTempN2
+
+# final run for the most accurate dump of the simulation 
+run     10000
+
+# undumping features
+undump  dumpall

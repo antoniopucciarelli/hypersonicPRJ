@@ -1,366 +1,371 @@
 SPARTA (7 Jan 2022)
-# seed generation
-seed 12345
+# forces computation -> aerodynamic coefficients for different Kn, Ma & AOA
+# authors:
+#	antonio pucciarelli
+#	raffaele tirotta
+#
+# aim:
+# --- compute aerodynamic coefficient using DSMC
+#
 
-# 3D simulation
-dimension 3
+# VARIABLES DECLARATION
+# setting up number of iterations in each loop
+variable	nKnudsen		equal	1			# Knudsen
+variable	nMach			equal	1			# Mach
+variable	nAOA			equal	1			# angle of attack
 
-# global settings declaration
-global surfmax 100000
-global splitmax 15
-global gridcut 0.1 comm/sort yes
+# setting up mixture properties
+variable	gammaMixture	equal	1.289			# specific heat ratio
+variable	boltzConstant	equal   1.38E-23	# Boltzmann constant declaration
 
-# boundary conditions
-boundary oo oo oo
+# setting up Mach number interval extremes
+variable	minMach		equal	10				# minimum Mach number
+variable	maxMach		equal	25				# maximum Mach number
 
-# Xmin, Xmax  Ymin, Ymax  Zmin, Zmax
-create_box -10 10 -10 10 -10 10
+# setting up Knudsen number interval extremes
+variable	minKnudsen	equal	0.25			# minimum Knudsen number
+variable	maxKnudsen	equal	0.5				# maximum Knudsen number
+
+# setting up angle of attack interval extremes
+variable	minAOA		equal	0				# minimum angle of attack
+variable	maxAOA		equal	30				# maximum angle of attack
+
+# setting up flow temperature
+variable	Tflow		equal	300				# flow temperature
+
+# setting up flow mean properties
+#variable	N2mass		equal	4.65E-26		# averaged mixture weight
+variable	N2diameter	equal	4.17E-10		# averaged mixture molecule dimension
+variable        Rmixt           equal   192.11                  # averaged gas constant
+
+# NUMBER OF SIMULATED PARTICLES IN ONE CELL
+variable	NumberSimCell		equal	20				# number of parcels for every number density
+
+# setting up simulation study values for a proper time/space analysis of the hypersonic flow
+variable	Nlam		equal	5				# space
+variable	Ntau		equal	5				# time
+
+# setting up domain properties
+variable	L			equal 	5				# reference length
+variable	xMin		equal	-10				# minimum x of the grid
+variable 	xMax		equal 	10				# maximum x of the grid
+variable 	yMin		equal	-10				# minimum y of the grid
+variable	yMax		equal	10				# maximum y of the grid
+variable	zMin		equal	-10				# minimum z of the grid
+variable	zMax		equal	10				# maximum z of the grid
+
+# setting up 1st loop
+variable iK loop ${nKnudsen}
+variable iK loop 1
+
+	# label declaration for the JUMP procedure
+	label 		loopLabelKnudsen
+
+	# setting up 2nd loop
+	variable iM loop ${nMach}
+	variable iM loop 1
+
+		# label declaration for the JUMP procedure
+		label	loopLabelMach
+
+			# setting up 3rd loop
+			variable iA loop ${nAOA}
+			variable iA loop 1
+
+				# label declaration for the JUMP procedure
+				label		loopLabelAOA
+
+				# printing nested loop properties
+				print " "
+ 
+				print "---------------------------------------"
+---------------------------------------
+				print "--- loop No. = ${iK} --- *Knudsen* ---"
+--- loop No. = 1 --- *Knudsen* ---
+				print "--- loop No. = ${iM} ---   *Ma*    ---"
+--- loop No. = 1 ---   *Ma*    ---
+				print "--- loop No. = ${iA} ---   *AOA*   ---"
+--- loop No. = 1 ---   *AOA*   ---
+				print "---------------------------------------"
+---------------------------------------
+				print " "
+ 
+
+				# variables computations
+				# AOA
+				variable 	thetaAngle 	equal 	${iA}*5
+				variable 	thetaAngle 	equal 	1*5
+				# sound speed
+				variable	cSpeed		equal	sqrt(${gammaMixture}*${Rmixt}*${Tflow})
+				variable	cSpeed		equal	sqrt(1.289*${Rmixt}*${Tflow})
+				variable	cSpeed		equal	sqrt(1.289*192.11*${Tflow})
+				variable	cSpeed		equal	sqrt(1.289*192.11*300)
+				# Mach number
+				variable	MachNumber	equal	${minMach}+(${maxMach}-${minMach})/${nMach}*${iM}
+				variable	MachNumber	equal	10+(${maxMach}-${minMach})/${nMach}*${iM}
+				variable	MachNumber	equal	10+(25-${minMach})/${nMach}*${iM}
+				variable	MachNumber	equal	10+(25-10)/${nMach}*${iM}
+				variable	MachNumber	equal	10+(25-10)/1*${iM}
+				variable	MachNumber	equal	10+(25-10)/1*1
+				# flow speed
+				variable	Uflow		equal	${MachNumber}*${cSpeed}
+				variable	Uflow		equal	25*${cSpeed}
+				variable	Uflow		equal	25*272.559969547988
+				# Knudsen number
+				variable	KnudsenNumber	equal 	${minKnudsen}+(${maxKnudsen}-${minKnudsen})/${nKnudsen}*${iK}
+				variable	KnudsenNumber	equal 	0.25+(${maxKnudsen}-${minKnudsen})/${nKnudsen}*${iK}
+				variable	KnudsenNumber	equal 	0.25+(0.5-${minKnudsen})/${nKnudsen}*${iK}
+				variable	KnudsenNumber	equal 	0.25+(0.5-0.25)/${nKnudsen}*${iK}
+				variable	KnudsenNumber	equal 	0.25+(0.5-0.25)/1*${iK}
+				variable	KnudsenNumber	equal 	0.25+(0.5-0.25)/1*1
+				# Lambda free stream
+                                variable        meanFreePathFS  equal   ${KnudsenNumber}*${L}
+                                variable        meanFreePathFS  equal   0.5*${L}
+                                variable        meanFreePathFS  equal   0.5*5
+				# number density -- pre-shock
+				variable	numberDensity	equal	1.0/(sqrt(2)*${KnudsenNumber}*${L}*PI*${N2diameter}^2)
+				variable	numberDensity	equal	1.0/(sqrt(2)*0.5*${L}*PI*${N2diameter}^2)
+				variable	numberDensity	equal	1.0/(sqrt(2)*0.5*5*PI*${N2diameter}^2)
+				variable	numberDensity	equal	1.0/(sqrt(2)*0.5*5*PI*4.17e-10^2)
+				# number density -- post-shock
+				variable	numberDensityPS equal   (${gammaMixture}+1)/(${gammaMixture}-1)*${numberDensity}
+				variable	numberDensityPS equal   (1.289+1)/(${gammaMixture}-1)*${numberDensity}
+				variable	numberDensityPS equal   (1.289+1)/(1.289-1)*${numberDensity}
+				variable	numberDensityPS equal   (1.289+1)/(1.289-1)*5.17753461206348e+17
+				# flow temperature -- post-shock
+				variable	TflowPS		equal	${numberDensity}/${numberDensityPS}*${Uflow}^2/(3*${Rmixt})
+				variable	TflowPS		equal	5.17753461206348e+17/${numberDensityPS}*${Uflow}^2/(3*${Rmixt})
+				variable	TflowPS		equal	5.17753461206348e+17/4.10082239689042e+18*${Uflow}^2/(3*${Rmixt})
+				variable	TflowPS		equal	5.17753461206348e+17/4.10082239689042e+18*6813.9992386997^2/(3*${Rmixt})
+				variable	TflowPS		equal	5.17753461206348e+17/4.10082239689042e+18*6813.9992386997^2/(3*192.11)
+				# mean free path -- post-shock
+				variable	meanFreePathPS 	equal	1.0/(sqrt(2)*${numberDensityPS}*PI*${N2diameter}^2)
+				variable	meanFreePathPS 	equal	1.0/(sqrt(2)*4.10082239689042e+18*PI*${N2diameter}^2)
+				variable	meanFreePathPS 	equal	1.0/(sqrt(2)*4.10082239689042e+18*PI*4.17e-10^2)
+				# thermal speed -- post-shock
+				variable	thermalSpeed	equal	sqrt((8*${Rmixt}*${TflowPS})/(PI))
+				variable	thermalSpeed	equal	sqrt((8*192.11*${TflowPS})/(PI))
+				variable	thermalSpeed	equal	sqrt((8*192.11*10171.499563128)/(PI))
+				# collision time interval -- post-shock
+				variable	timeInterval	equal	1.0/(${numberDensityPS}*PI*${N2diameter}^2*${thermalSpeed})
+				variable	timeInterval	equal	1.0/(4.10082239689042e+18*PI*${N2diameter}^2*${thermalSpeed})
+				variable	timeInterval	equal	1.0/(4.10082239689042e+18*PI*4.17e-10^2*${thermalSpeed})
+				variable	timeInterval	equal	1.0/(4.10082239689042e+18*PI*4.17e-10^2*2230.68134610212)
+				# simulation time interval -- using post-shock conditions and the engineering/simulation relaxation
+				variable	dt		equal 	${timeInterval}/${Ntau}
+				variable	dt		equal 	0.000200110335938686/${Ntau}
+				variable	dt		equal 	0.000200110335938686/5
+				# simulation space interval -- using post-shock conditions and the engineering/simulation relaxation
+				variable	ds 		equal 	${meanFreePathFS}/${Nlam}
+				variable	ds 		equal 	2.5/${Nlam}
+				variable	ds 		equal 	2.5/5
+				#SET TO FREESTREAM CONDITION -> if it doesn't satisfy  change it
+                                variable        NumberTrueCell  equal   ${numberDensity}*${ds}*${ds}*${ds}
+                                variable        NumberTrueCell  equal   5.17753461206348e+17*${ds}*${ds}*${ds}
+                                variable        NumberTrueCell  equal   5.17753461206348e+17*0.5*${ds}*${ds}
+                                variable        NumberTrueCell  equal   5.17753461206348e+17*0.5*0.5*${ds}
+                                variable        NumberTrueCell  equal   5.17753461206348e+17*0.5*0.5*0.5
+				# number of simulated particles -- post-shock
+                                variable        Wp              equal   ${NumberTrueCell}/${NumberSimCell}
+                                variable        Wp              equal   6.47191826507935e+16/${NumberSimCell}
+                                variable        Wp              equal   6.47191826507935e+16/20
+				# getting cell properties
+				variable	xNcells		equal	round((${xMax}-${xMin})/${ds}) 	# x direction
+				variable	xNcells		equal	round((10-${xMin})/${ds}) 	
+				variable	xNcells		equal	round((10--10)/${ds}) 	
+				variable	xNcells		equal	round((10--10)/0.5) 	
+				variable	yNcells		equal   round((${yMax}-${yMin})/${ds})	# y direction
+				variable	yNcells		equal   round((10-${yMin})/${ds})	
+				variable	yNcells		equal   round((10--10)/${ds})	
+				variable	yNcells		equal   round((10--10)/0.5)	
+				variable    zNcells     equal   round((${zMax}-${zMin})/${ds})  # z direction
+				variable    zNcells     equal   round((10-${zMin})/${ds})  
+				variable    zNcells     equal   round((10--10)/${ds})  
+				variable    zNcells     equal   round((10--10)/0.5)  
+
+				# printing values
+				print " "
+ 
+				print "--- AOA                           = ${thetaAngle}"
+--- AOA                           = 5
+				print "--- sound speed                   = ${cSpeed}"
+--- sound speed                   = 272.559969547988
+				print "--- Mach number	                 = ${MachNumber}"
+--- Mach number	                 = 25
+				print "--- Knudsen number                = ${KnudsenNumber}"
+--- Knudsen number                = 0.5
+				print "--- flow speed                    = ${Uflow}"
+--- flow speed                    = 6813.9992386997
+				print "--- number density    *PRE-SHOCK* = ${numberDensity}"
+--- number density    *PRE-SHOCK* = 5.17753461206348e+17
+				print "--- number density   *POST-SHOCK* = ${numberDensityPS}"
+--- number density   *POST-SHOCK* = 4.10082239689042e+18
+				print "--- flow temperature *POST-SHOCK* = ${TflowPS}"
+--- flow temperature *POST-SHOCK* = 10171.499563128
+				print "--- mean free path   *POST-SHOCK* = ${meanFreePathPS}"
+--- mean free path   *POST-SHOCK* = 0.31564001747488
+				print "--- thermal speed	             = ${thermalSpeed}"
+--- thermal speed	             = 2230.68134610212
+				print "--- collision time interval       = ${timeInterval}"
+--- collision time interval       = 0.000200110335938686
+				print "--- ds				  			 = ${ds}"
+--- ds				  			 = 0.5
+				print "--- dt				  			 = ${dt}"
+--- dt				  			 = 4.00220671877372e-05
+				print "--- X cells			  			 = ${xNcells}"
+--- X cells			  			 = 40
+				print "--- Y cells			  			 = ${yNcells}"
+--- Y cells			  			 = 40
+				print " "
+ 
+
+                # running case
+                include     in.case
+# forces computation -> aerodynamic coefficients for different Kn, Ma & AOA
+# authors:
+#	antonio pucciarelli
+#	raffaele tirotta
+#
+# aim:
+# --- compute aerodynamic coefficient using DSMC
+#
+
+# INITIALIZING CASE
+# seed generation -> random properties for the simulation
+seed            12345
+
+# setting up simulation type
+dimension       3
+
+# setting up grid properties
+global          surfmax     100000
+global          splitmax    15
+global          gridcut     0.0 comm/sort yes
+
+# setting up boundary properties
+boundary        oo oo oo
+
+# SETTING UP GRID
+# study box generation
+create_box      ${xMin} ${xMax} ${yMin} ${yMax} ${zMin} ${zMax}
+create_box      -10 ${xMax} ${yMin} ${yMax} ${zMin} ${zMax}
+create_box      -10 10 ${yMin} ${yMax} ${zMin} ${zMax}
+create_box      -10 10 -10 ${yMax} ${zMin} ${zMax}
+create_box      -10 10 -10 10 ${zMin} ${zMax}
+create_box      -10 10 -10 10 -10 ${zMax}
+create_box      -10 10 -10 10 -10 10
 Created orthogonal box = (-10 -10 -10) to (10 10 10)
 
-# Number of cells, only 1 along z
-create_grid 200 100 100
+# grid generation
+create_grid     ${xNcells} ${yNcells} 1
+create_grid     40 ${yNcells} 1
+create_grid     40 40 1
 WARNING: Could not acquire nearby ghost cells b/c grid partition is not clumped (../grid.cpp:410)
-Created 2000000 child grid cells
-  CPU time = 0.0952308 secs
-  create/ghost percent = 76.6365 23.3635
+Created 1600 child grid cells
+  CPU time = 0.000519399 secs
+  create/ghost percent = 94.0978 5.90221
+#${zNcells}
 
-# setting parallel run
-balance_grid rcb cell
-Balance grid migrated 1500000 cells
-  CPU time = 0.547564 secs
-  reassign/sort/migrate/ghost percent = 24.6968 1.62633 38.888 34.7889
+# parallel computing settings
+balance_grid    rcb part
+Balance grid migrated 1200 cells
+  CPU time = 0.000491995 secs
+  reassign/sort/migrate/ghost percent = 47.5417 0.293702 22.6878 29.4767
+fix             loadbalance balance 1000 1.1 rcb part
 
-# number density
-global nrho 5.84E15 fnum 1E15
+# SETTING UP PARTICLES PROPERTIES
+# No. of particles | No. of simulated particles
+global          nrho ${numberDensity} fnum ${Wp}
+global          nrho 5.17753461206348e+17 fnum ${Wp}
+global          nrho 5.17753461206348e+17 fnum 3.23595913253968e+15
 
-# define a gas species
-species air.species N2
+# species properties loading
+species         collisionProperties/marsAtmosphere.species CO2 N2
 
-# free-stream velocity and temperature
-mixture nitrogen N2 vstream 8000.0 0.0 0.0 temp 850
+# mixture properties declaration
+mixture     atmoMars    CO2 N2  vstream ${Uflow} 0.0 0.0 temp ${Tflow} 	# name | molecules | speed | temperature
+mixture     atmoMars    CO2 N2  vstream 6813.9992386997 0.0 0.0 temp ${Tflow} 	
+mixture     atmoMars    CO2 N2  vstream 6813.9992386997 0.0 0.0 temp 300 	
+mixture		atmoMars    CO2 	frac 0.9537				                # CO2 molar fraction
+mixture		atmoMars    N2  	frac 0.0463				                # N2 molar fraction
+mixture     m_CO2       CO2                                             # generation of a single mixture for the CO2 species properties tracking
+mixture     m_N2        N2                                              # generation of a single mixture for the N2 species properties tracking
 
-# no gas-phase collisions
-collide none
-
-# import geometry
-read_surf data.orionSimple origin 0.0 0.0 0.0 rotate 180 0 0 1
+# SURFACE PROPERTIES SETUP
+# surface loading and rotation
+read_surf       geometry/data.orionSimple origin 0.0 0.0 0.0 rotate 180-${thetaAngle} 0 0 1 trans 1 0 0
+read_surf       geometry/data.orionSimple origin 0.0 0.0 0.0 rotate 180-5 0 0 1 trans 1 0 0
   25732 points
   51460 triangles
-  -3.30625 1.11646e-16 xlo xhi
+  -2.30625 1 xlo xhi
   -2.51498 2.51429 ylo yhi
   -2.51485 2.51453 zlo zhi
   0.0233178 min triangle edge length
   0.00054053 min triangle area
-  3372 0 = cells overlapping surfs, overlap cells with unmarked corner pts
-  310 tiny edges removed
-  1989381 7247 3372 = cells outside/inside/overlapping surfs
-  3368 4 = surf cells with 1,2,etc splits
+  65 0 = cells overlapping surfs, overlap cells with unmarked corner pts
+  23 tiny edges removed
+  1535 0 65 = cells outside/inside/overlapping surfs
+  34 31 = surf cells with 1,2,etc splits
   7964.64 7964.64 = cell-wise and global flow volume
-  CPU time = 0.823776 secs
-  read/check/sort/surf2grid/ghost/inout/particle percent = 3.74087 9.19204 7.22634 32.1329 47.7078 34.8175 0.000741707
-  surf2grid time = 0.264703 secs
-  map/comm1/comm2/comm3/comm4/split percent = 27.2812 2.34267 23.6881 2.65928 5.90565 29.6639
+  CPU time = 3.29832 secs
+  read/check/sort/surf2grid/ghost/inout/particle percent = 0.980166 2.11932 0.000625651 4.7254 92.1745 0.0460671 8.43156e-05
+  surf2grid time = 0.155859 secs
+  map/comm1/comm2/comm3/comm4/split percent = 2.94472 9.8522 0.0510147 0.471178 4.17945 82.035
 
-# create a gas-surface collision type and give it the ID = 1
-surf_collide 1 specular
+# COLLISION PROPERTIES
+# surface collision properties
+surf_collide    surfCollision   diffuse 1500.0 1.0
+surf_modify     all             collide surfCollision
 
-# assign collisions to surfaces
-surf_modify all collide 1
+# molecule(s)/molecule(s) collision properties
+collide 	    vss         atmoMars collisionProperties/marsAtmosphere.vss
+collide_modify	vibrate     smooth
 
-# inject gas from Xmin surface
-fix fixInject emit/face nitrogen xlo ylo yhi
+# REACTION SETUP
+# problem set as non reactive
+react		    none
 
-# timestep (not critical in this free molecular simulation)
-timestep 5.0E-7 # [s]
+# INJECTION SETUP
+# due to flow speed and thermal speed -> flow only from x[+ve], y[-ve], y[+ve], z[-ve] and z[+ve]
+fix fixInject   emit/face atmoMars xlo ylo yhi zlo zhi
 
-# print stats each N timesteps
-stats 100
+# TIME STEP DECLARATION
+timestep        ${dt}
+timestep        4.00220671877372e-05
 
-# step     = timestep
-# cpu      = elapsed CPU time in seconds within a run
-# np       = number of particles (this step)
-# nscoll   = number of surface collisions (this step)
-# ncoll    = number of particle/particle collisions (this step)
-# nattempt = number of attempted collisions (this step)
-stats_style step cpu np nattempt ncoll
+# PROPERTIES COMPUTATION
+# force all over the surface
+compute         FORCEs      surf        all all             fx fy	                        # x|y direction
 
-# run simulation
-run 1500
+# heat flux computation
+compute         heatFlux	surf        all all             etot                            # heat flux on the whole body
+
+# summing up all the forces and average them
+fix             forceAVE    ave/surf    all 1 10 100        c_FORCEs[*]     ave one         # average x|y direction
+
+# summing up all the heat flux and average them
+fix		        heatAVE     ave/surf    all 1 10 100	    c_heatFlux[*]   ave one         # average heat flux
+
+# sum of the average forces
+compute         forceTOT    reduce      sum                 f_forceAVE[1] f_forceAVE[2]     # total x|y direction
+
+# sum of the average forces
+compute         heatTOT     reduce      sum                 f_heatAVE                       # total heat flux
+
+# PLOTTING/PRINTING PROPERTIES
+# every 100 time steps
+stats           100
+
+# output setup
+stats_style     step    cpu     c_forceTOT[1]   c_forceTOT[2]   c_heatTOT
+
+# doing the first run of the case in order to get a first approximation of the total drag force
+run     2000
 Memory usage per proc in Mbytes:
   particles (ave,min,max) = 0 0 0
-  grid      (ave,min,max) = 167.481 167.294 167.669
+  grid      (ave,min,max) = 78.1064 78.1064 78.1064
   surf      (ave,min,max) = 6.47804 6.47804 6.47804
-  total     (ave,min,max) = 173.959 173.772 174.147
-Step CPU Np Natt Ncoll 
-       0            0        0        0        0 
-     100  0.052475931      960        0        0 
-     200  0.095247572     1931        0        0 
-     300   0.14048479     2858        0        0 
-     400    0.1873623     3805        0        0 
-     500   0.23707584     4780        0        0 
-     600   0.28964673     5813        0        0 
-     700   0.34663556     6757        0        0 
-     800   0.41697322     7675        0        0 
-     900   0.49518733     8624        0        0 
-    1000   0.57736762     9604        0        0 
-    1100   0.66247611    10525        0        0 
-    1200   0.75018999    11505        0        0 
-    1300   0.84131092    12513        0        0 
-    1400   0.93634817    13465        0        0 
-    1500    1.0340243    14413        0        0 
-Loop time of 1.03404 on 4 procs for 1500 steps with 14413 particles
-
-MPI task timing breakdown:
-Section |  min time  |  avg time  |  max time  |%varavg| %total
----------------------------------------------------------------
-Move    | 0.0088881  | 0.16928    | 0.33831    |  39.0 | 16.37
-Coll    | 0          | 0          | 0          |   0.0 |  0.00
-Sort    | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 0.0064993  | 0.0071753  | 0.0078091  |   0.7 |  0.69
-Modify  | 0.45559    | 0.56802    | 0.67411    |  13.4 | 54.93
-Output  | 0.00011073 | 0.00016512 | 0.000325   |   0.0 |  0.02
-Other   |            | 0.2894     |            |       | 27.99
-
-Particle moves    = 10809764 (10.8M)
-Cells touched     = 11257730 (11.3M)
-Particle comms    = 211 (0.211K)
-Boundary collides = 0 (0K)
-Boundary exits    = 323 (0.323K)
-SurfColl checks   = 0 (0K)
-SurfColl occurs   = 0 (0K)
-Surf reactions    = 0 (0K)
-Collide attempts  = 0 (0K)
-Collide occurs    = 0 (0K)
-Reactions         = 0 (0K)
-Particles stuck   = 0
-Axisymm bad moves = 0
-
-Particle-moves/CPUsec/proc: 2.61347e+06
-Particle-moves/step: 7206.51
-Cell-touches/particle/step: 1.04144
-Particle comm iterations/step: 1
-Particle fraction communicated: 1.95194e-05
-Particle fraction colliding with boundary: 0
-Particle fraction exiting boundary: 2.98804e-05
-Surface-checks/particle/step: 0
-Surface-collisions/particle/step: 0
-Surf-reactions/particle/step: 0
-Collision-attempts/particle/step: 0
-Collisions/particle/step: 0
-Reactions/particle/step: 0
-
-Particles: 3603.25 ave 7186 max 165 min
-Histogram: 2 0 0 0 0 0 0 0 0 2
-Cells:      500002 ave 500004 max 500000 min
-Histogram: 2 0 0 0 0 0 0 0 0 2
-GhostCell: 20201.5 ave 20204 max 20200 min
-Histogram: 2 0 0 0 0 1 0 0 0 1
-EmptyCell: 0 ave 0 max 0 min
-Histogram: 4 0 0 0 0 0 0 0 0 0
-Surfs:    51460 ave 51460 max 51460 min
-Histogram: 4 0 0 0 0 0 0 0 0 0
-GhostSurf: 0 ave 0 max 0 min
-Histogram: 4 0 0 0 0 0 0 0 0 0
-
-# grid adaptation
-fix adaptgrid adapt 500 all refine particle 50 1
-
-# run simulation after grid refinement
-run 1500
-Memory usage per proc in Mbytes:
-  particles (ave,min,max) = 1.6875 1.6875 1.6875
-  grid      (ave,min,max) = 167.481 167.294 167.669
-  surf      (ave,min,max) = 6.47804 6.47804 6.47804
-  total     (ave,min,max) = 175.647 175.459 175.834
-Step CPU Np Natt Ncoll 
-    1500            0    14413        0        0 
-    1600   0.12220159    15359        0        0 
-    1700   0.22508945    16221        0        0 
-    1800   0.34440133    17190        0        0 
-    1900   0.44324428    18101        0        0 
-    2000     1.236347    18989        0        0 
-    2100    1.3613519    19921        0        0 
-    2200    1.4822208    20842        0        0 
-    2300    1.6065333    21731        0        0 
-    2400    1.7327292    22623        0        0 
-    2500    2.7252675    23534        0        0 
-    2600    2.8621166    24412        0        0 
-    2700     2.998359    25313        0        0 
-    2800    3.1363266    26253        0        0 
-    2900    3.2773535    27192        0        0 
-    3000     4.301734    28033        0        0 
-Loop time of 4.30176 on 4 procs for 1500 steps with 28033 particles
-
-MPI task timing breakdown:
-Section |  min time  |  avg time  |  max time  |%varavg| %total
----------------------------------------------------------------
-Move    | 0.08045    | 0.58451    | 1.0919     |  65.8 | 13.59
-Coll    | 0          | 0          | 0          |   0.0 |  0.00
-Sort    | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 0.0087633  | 0.0099231  | 0.010882   |   1.0 |  0.23
-Modify  | 2.9396     | 3.0542     | 3.1682     |   6.2 | 71.00
-Output  | 0.00014077 | 0.00019783 | 0.00034525 |   0.0 |  0.00
-Other   |            | 0.6529     |            |       | 15.18
-
-Particle moves    = 31900283 (31.9M)
-Cells touched     = 33238140 (33.2M)
-Particle comms    = 4791 (4.79K)
-Boundary collides = 0 (0K)
-Boundary exits    = 923 (0.923K)
-SurfColl checks   = 1145655 (1.15M)
-SurfColl occurs   = 610 (0.61K)
-Surf reactions    = 0 (0K)
-Collide attempts  = 0 (0K)
-Collide occurs    = 0 (0K)
-Reactions         = 0 (0K)
-Particles stuck   = 0
-Axisymm bad moves = 0
-
-Particle-moves/CPUsec/proc: 1.85391e+06
-Particle-moves/step: 21266.9
-Cell-touches/particle/step: 1.04194
-Particle comm iterations/step: 1
-Particle fraction communicated: 0.000150187
-Particle fraction colliding with boundary: 0
-Particle fraction exiting boundary: 2.89339e-05
-Surface-checks/particle/step: 0.0359136
-Surface-collisions/particle/step: 1.91221e-05
-Surf-reactions/particle/step: 0
-Collision-attempts/particle/step: 0
-Collisions/particle/step: 0
-Reactions/particle/step: 0
-
-Particles: 7008.25 ave 11702 max 2397 min
-Histogram: 2 0 0 0 0 0 0 0 0 2
-Cells:      500002 ave 500004 max 500000 min
-Histogram: 2 0 0 0 0 0 0 0 0 2
-GhostCell: 20201.5 ave 20204 max 20200 min
-Histogram: 2 0 0 0 0 1 0 0 0 1
-EmptyCell: 0 ave 0 max 0 min
-Histogram: 4 0 0 0 0 0 0 0 0 0
-Surfs:    51460 ave 51460 max 51460 min
-Histogram: 4 0 0 0 0 0 0 0 0 0
-GhostSurf: 0 ave 0 max 0 min
-Histogram: 4 0 0 0 0 0 0 0 0 0
-
-# unfixing adapt grid
-unfix adaptgrid
-
-# computing forces
-compute fx surf all all fx
-compute fz surf all all fz
-
-# computing average forces
-fix fxAVE ave/surf all 1 10 100 c_fx[*] ave one
-fix fzAVE ave/surf all 1 10 100 c_fz[*] ave one
-
-# computing total forces
-compute fxTOT reduce sum f_fxAVE[*]
-compute fzTOT reduce sum f_fzAVE[*]
-
-# saving data
-compute n         grid          all nitrogen n
-compute nrho      grid          all nitrogen nrho
-compute velocity  grid          all nitrogen u v w
-compute temp_tra  thermal/grid  all nitrogen temp
-
-fix avg_n         ave/grid all  1 10 100 c_n[*]        ave running
-fix avg_nrho      ave/grid all  1 10 100 c_nrho[*]     ave running
-fix avg_velocity  ave/grid all  1 10 100 c_velocity[*] ave running
-fix avg_temp      ave/grid all  1 10 100 c_temp_tra[*] ave running
-
-# saving grid
-shell mkdir grid
-write_grid ./grid/gridOrionSimple
-  grid cells = 2000000
-  CPU time = 0.193303 secs
-
-# saving computed results
-shell mkdir dump
-dump  myDumpID  grid  all  100  ./dump/flow_field.* id proc       f_avg_n   f_avg_nrho  f_avg_temp f_avg_velocity[*]
-
-# printing style
-stats_style step cpu np nattempt ncoll c_fxTOT c_fzTOT
-
-# run simulation
-run 2000
-Memory usage per proc in Mbytes:
-  particles (ave,min,max) = 1.6875 1.6875 1.6875
-  grid      (ave,min,max) = 167.481 167.294 167.669
-  surf      (ave,min,max) = 6.47804 6.47804 6.47804
-  total     (ave,min,max) = 290.285 290.097 290.473
-Step CPU Np Natt Ncoll c_fxTOT c_fzTOT 
-    3000            0    28033        0        0            0            0 
-    3100    1.5252258    28921        0        0   0.29950826  0.052303491 
-    3200     3.095619    29790        0        0   0.68306634 -0.096225434 
-    3300    4.6835257    30697        0        0   0.94422982  -0.09163257 
-    3400     6.324339    31585        0        0   0.68537243 -0.033169285 
-    3500    8.0157208    32471        0        0   0.68020868 -0.002581155 
-    3600    9.7172618    33330        0        0   0.27390726  0.090498209 
-    3700    11.421046    34226        0        0    0.4542242  0.015943545 
-    3800     13.15844    35133        0        0    0.5469931  0.034682093 
-    3900    14.967646    35975        0        0   0.12629757  0.053051033 
-    4000    16.783303    36816        0        0   0.63439102  -0.10802698 
-    4100      18.6166    37641        0        0   0.49941173 -0.094637585 
-    4200    20.466829    38511        0        0   0.75756064  0.021957949 
-    4300    22.308568    39340        0        0   0.39086942 -0.049054094 
-    4400    24.214597    40190        0        0   0.75105022  0.010140009 
-    4500    26.131751    40958        0        0    0.2287753 0.0021673408 
-    4600    28.042859    41696        0        0   0.85575118 -0.039891098 
-    4700    29.948484    42396        0        0   0.33281938 -0.059435164 
-    4800    31.935786    43078        0        0   0.28998764 -0.013599968 
-    4900     33.88435    43554        0        0   0.59896434 -0.010516795 
-    5000    36.412562    43985        0        0   0.50981092  0.013146529 
-Loop time of 36.4126 on 4 procs for 2000 steps with 43985 particles
-
-MPI task timing breakdown:
-Section |  min time  |  avg time  |  max time  |%varavg| %total
----------------------------------------------------------------
-Move    | 1.2722     | 1.6448     | 2.023      |  28.9 |  4.52
-Coll    | 0          | 0          | 0          |   0.0 |  0.00
-Sort    | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 0.015908   | 0.017787   | 0.020502   |   1.3 |  0.05
-Modify  | 13.186     | 13.797     | 14.389     |  15.3 | 37.89
-Output  | 19.884     | 19.94      | 19.998     |   1.2 | 54.76
-Other   |            | 1.013      |            |       |  2.78
-
-Particle moves    = 73251413 (73.3M)
-Cells touched     = 76331054 (76.3M)
-Particle comms    = 17965 (18K)
-Boundary collides = 0 (0K)
-Boundary exits    = 3743 (3.74K)
-SurfColl checks   = 1715925 (1.72M)
-SurfColl occurs   = 864 (0.864K)
-Surf reactions    = 0 (0K)
-Collide attempts  = 0 (0K)
-Collide occurs    = 0 (0K)
-Reactions         = 0 (0K)
-Particles stuck   = 0
-Axisymm bad moves = 0
-
-Particle-moves/CPUsec/proc: 502927
-Particle-moves/step: 36625.7
-Cell-touches/particle/step: 1.04204
-Particle comm iterations/step: 1
-Particle fraction communicated: 0.000245251
-Particle fraction colliding with boundary: 0
-Particle fraction exiting boundary: 5.1098e-05
-Surface-checks/particle/step: 0.0234251
-Surface-collisions/particle/step: 1.1795e-05
-Surf-reactions/particle/step: 0
-Collision-attempts/particle/step: 0
-Collisions/particle/step: 0
-Reactions/particle/step: 0
-
-Particles: 10996.2 ave 11829 max 10084 min
-Histogram: 1 1 0 0 0 0 0 0 0 2
-Cells:      500002 ave 500004 max 500000 min
-Histogram: 2 0 0 0 0 0 0 0 0 2
-GhostCell: 20201.5 ave 20204 max 20200 min
-Histogram: 2 0 0 0 0 1 0 0 0 1
-EmptyCell: 0 ave 0 max 0 min
-Histogram: 4 0 0 0 0 0 0 0 0 0
-Surfs:    51460 ave 51460 max 51460 min
-Histogram: 4 0 0 0 0 0 0 0 0 0
-GhostSurf: 0 ave 0 max 0 min
-Histogram: 4 0 0 0 0 0 0 0 0 0
+  total     (ave,min,max) = 84.8789 84.8789 84.8789
+Step CPU c_forceTOT[1] c_forceTOT[2] c_heatTOT 
+       0            0            0            0            0 
+     100    34.25

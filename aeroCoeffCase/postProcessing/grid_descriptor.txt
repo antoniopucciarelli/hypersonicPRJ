@@ -1,6 +1,6 @@
 dimension 3
+
 create_box   -10 10 -10 10 -10 10
 
-read_grid    ../grid/gridOrionSimple
-
+read_grid    ../dump/Kn1/Ma1/AOA1/GRID/parentGrid
 

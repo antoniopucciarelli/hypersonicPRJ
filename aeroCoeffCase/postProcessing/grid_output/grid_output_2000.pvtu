@@ -7,16 +7,17 @@
 <PDataArray type="Float64" Name="id"/>
 <PDataArray type="Float64" Name="proc"/>
 <PDataArray type="Float64" Name="f_avg_n"/>
-<PDataArray type="Float64" Name="f_avg_nrho"/>
-<PDataArray type="Float64" Name="f_avg_temp"/>
-<PDataArray type="Float64" Name="f_avg_velocity[1]"/>
-<PDataArray type="Float64" Name="f_avg_velocity[2]"/>
-<PDataArray type="Float64" Name="f_avg_velocity[3]"/>
+<PDataArray type="Float64" Name="f_avg_temp_tra"/>
+<PDataArray type="Float64" Name="f_avg_vel[1]"/>
+<PDataArray type="Float64" Name="f_avg_vel[2]"/>
+<PDataArray type="Float64" Name="f_avg_vel[3]"/>
 </PCellData>
 <PPoints>
 <PDataArray type="Float32" Name="Points" NumberOfComponents="3"/>
 </PPoints>
 <Piece Source="grid_output_0_2000.vtu"/>
 <Piece Source="grid_output_1_2000.vtu"/>
+<Piece Source="grid_output_2_2000.vtu"/>
+<Piece Source="grid_output_3_2000.vtu"/>
 </PUnstructuredGrid>
 </VTKFile>
