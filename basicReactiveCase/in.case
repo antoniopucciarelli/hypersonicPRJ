@@ -1,0 +1,184 @@
+# hypersonic reactive flow simulation of a capsule that is entering in the martian atmosphere 
+# authors:
+#	antonio pucciarelli
+#	raffaele tirotta
+#
+# aim:
+# --- compute flow properties with chemistry enabled for an 2D axialsymmetric simulation
+# --- chemistry based on all the possible molucules made by C and O 
+#
+
+# setting up domain properties and main flow properties 
+variable         Fnum   equal  1.5e18
+
+variable         n_FS   equal  2.0E20  # [1/m3]
+variable         Vx_FS  equal  5000.0  # [m/s]
+variable         Vy_FS  equal  0.0     # [m/s]
+variable         T_FS   equal  300.0   # [K]
+
+# wall properties 
+variable         T_w    equal  1000.0  # [K]
+variable         a_w    equal  1.0
+
+# setting up global parameters
+# random properties descriptor
+seed             12345
+
+# 2D simulation 
+dimension        2
+
+# international unit system
+units            si
+
+# grid properties 
+global           gridcut 0.0 comm/sort yes
+
+# boundary conditions setup 
+boundary         oo ao pp
+
+# domani generation and initial discretization
+create_box       ${xMin} ${xMax} ${yMin} ${yMax} ${zMin} ${zMax}
+create_grid      ${xNcells} ${yNcells} 1
+
+# enabling parallel computation 
+balance_grid     rcb part 
+fix              loadbalance balance 1000 1.1 rcb part
+
+# flow properties and timestep
+global           fnum ${Fnum} weight cell radius
+timestep         ${dt}
+
+# MIXTURE SETUP 
+# loading molecules/atoms properties 
+species          collisionProperties/marsAtmosphere.species CO2 O2 C2 CO O C
+
+# Mars atmosphere setup
+mixture          marsAtmo   CO2 O2 C2 CO O C    vstream ${Uflow} 0.0 0.0 temp ${T_FS} nrho ${n_FS}          # mixture declaration 
+mixture          marsAtmo   CO2                 frac 1.0                                                    # molar fraction of CO2
+mixture          marsAtmo   O2                  frac 0.0                                                    # molar fraction of O2
+mixture          marsAtmo   C2                  frac 0.0                                                    # molar fraction of C2
+mixture          marsAtmo   CO                  frac 0.0                                                    # molar fraction of CO
+mixture          marsAtmo   O                   frac 0.0                                                    # molar fraction of O
+mixture          marsAtmo   C                   frac 0.0                                                    # molar fraction of C
+
+# setting up mixtures for each molecules/atom 
+mixture          m_CO2      CO2
+mixture          m_O2       O2
+mixture          m_C2       C2
+mixture          m_CO       CO
+mixture          m_O        O
+mixture          m_C        C
+
+# GEOMETRY SETUP 
+# loading capsule surface 
+read_surf        geometry/data.orionSimple  clip
+
+# MIXTURE/SURFACE COLLISION PROPERTIES SETUP 
+# surface collsion properties  
+surf_collide     scoll      diffuse ${T_w} ${a_w}
+surf_modify      all        collide scoll
+
+# setting up collision properties from .vss file
+collide          vss        marsAtmo marsAtmosphere.vss
+collide_modify   vibrate    smooth
+
+# enabling chemistry
+react            tce        marsAtmosphere.tce
+
+# BOUNDARY CONDITIONS SETUP
+fix              in         emit/face   marsAtmo xlo yhi 
+
+# Seed particles uniformly in the domain
+create_particles marsAtmo   n 0
+
+# properties computation setup 
+compute          ntot       count       CO2 O2 C2 CO O C
+
+# printout setup 
+stats            100
+stats_style      step cpu np nattempt ncoll nscoll nscheck c_ntot[*]
+              
+# first run of the simulation -> setting up flow into the domain 
+run              10000
+
+# GRID ADAPTATION
+# properties computaion for the grid refinement
+compute          nrho               grid            all     marsAtmo                        nrho
+compute          temp_tra           thermal/grid    all     marsAtmo                        temp
+fix              avg_nrho           ave/grid        all     10 100 1000 c_nrho[*]           ave one
+fix              avg_temp_tra       ave/grid        all     10 100 1000 c_temp_tra[*]       ave one
+
+# computing mean free path 
+compute          mfp                lambda/grid     f_avg_nrho[*] f_avg_temp_tra[*] CO2 kall
+fix              avg_mfp            ave/grid        all     1 1 1000 c_mfp[*] ave one
+
+# grid adaptation 
+fix              adaptgrid          adapt 1000 all refine coarsen value f_avg_mfp[2] 0.2 0.9 thresh less more 
+
+# second run for the grid adaptation 
+run              3000
+
+# unfixing properties and grid adaptation procedure 
+unfix            avg_nrho
+unfix            avg_temp_tra
+unfix            avg_mfp
+unfix            adaptgrid
+
+# FLOW PROPERTIES COMPUTATION
+# density number | speed | number of parcels 
+compute          n                  grid            all     marsAtmo                        n
+compute          nrho               grid            all     marsAtmo                        nrho
+compute          vel                grid            all     marsAtmo                        u v w
+# temperature
+compute          temp_tra           thermal/grid    all     marsAtmo                        temp
+compute          temp_rot           grid            all     marsAtmo                        trot
+compute          temp_vib           grid            all     marsAtmo                        tvib
+# density number
+compute          nrho_CO2           grid            all     m_CO2                           nrho
+compute          nrho_O2            grid            all     m_O2                            nrho
+compute          nrho_C2            grid            all     m_C2                            nrho
+compute          nrho_CO            grid            all     m_CO                            nrho
+compute          nrho_O             grid            all     m_O                             nrho
+compute          nrho_C             grid            all     m_C                             nrho
+# stresses and heat fluxes
+compute          pressure           surf            all     marsAtmo                        press px py pz
+compute          shear              surf            all     marsAtmo                        shx shy shz
+compute          heat_flux          surf            all     marsAtmo                        etot
+
+# averaging in time 
+fix              avg_n              ave/grid        all     10 100 1000 c_n[*]              ave running
+fix              avg_nrho           ave/grid        all     10 100 1000 c_nrho[*]           ave running
+fix              avg_vel            ave/grid        all     10 100 1000 c_vel[*]            ave running
+fix              avg_temp_tra       ave/grid        all     10 100 1000 c_temp_tra[*]       ave running
+fix              avg_temp_rot       ave/grid        all     10 100 1000 c_temp_rot[*]       ave running
+fix              avg_temp_vib       ave/grid        all     10 100 1000 c_temp_vib[*]       ave running
+fix              avg_nrho_CO2       ave/grid        all     10 100 1000 c_nrho_CO2[*]       ave running
+fix              avg_nrho_O2        ave/grid        all     10 100 1000 c_nrho_O2[*]        ave running
+fix              avg_nrho_C2        ave/grid        all     10 100 1000 c_nrho_C2[*]        ave running
+fix              avg_nrho_CO        ave/grid        all     10 100 1000 c_nrho_CO[*]        ave running
+fix              avg_nrho_O         ave/grid        all     10 100 1000 c_nrho_O[*]         ave running
+fix              avg_nrho_C         ave/grid        all     10 100 1000 c_nrho_C[*]         ave running
+fix              avg_pressure       ave/surf        all     10 100 1000 c_pressure[*]       ave running
+fix              avg_shear          ave/surf        all     10 100 1000 c_shear[*]          ave running
+fix              avg_heat_flux      ave/surf        all     10 100 1000 c_heat_flux[*]      ave running
+
+# RESULTS ALLOCATION AND DEFINITIONS
+# directories generation 
+shell            mkdir GRID
+shell            mkdir DUMP
+
+# saving grid 
+write_grid       ./GRID/parent_grid
+
+# dumping setup 
+dump            dumpall  grid   all  1000 ./DUMP/flow_field.* id proc                                   &
+                f_avg_n         f_avg_nrho                                                              &
+                f_avg_temp_tra  f_avg_temp_rot  f_avg_temp_vib                                          &
+                f_avg_vel[*]                                                                            &
+                f_avg_nrho_CO2  f_avg_nrho_O2   f_avg_nrho_C2   f_avg_nrho_CO  f_avg_nrho_O f_avg_nrho_C
+
+dump             dumpSurf surf   all  1000 ./DUMP/surf_heat_flux.* id & 
+                 f_avg_pressure[*] f_avg_shear[*] f_avg_heat_flux[*] 
+
+# running case
+run              10000
