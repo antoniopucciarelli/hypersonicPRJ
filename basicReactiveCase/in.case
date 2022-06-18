@@ -8,16 +8,6 @@
 # --- chemistry based on all the possible molucules made by C and O 
 #
 
-# setting up domain properties and main flow properties 
-variable         Fnum   equal  1.5e18
-
-variable         n_FS   equal  2.0E20  # [1/m3]
-variable         T_FS   equal  300.0   # [K]
-
-# wall properties 
-variable         T_w    equal  1000.0  # [K]
-variable         a_w    equal  1.0
-
 # setting up global parameters
 # random properties descriptor
 seed             12345
@@ -36,7 +26,7 @@ boundary         oo ao pp
 
 # domani generation and initial discretization
 create_box       ${xMin} ${xMax} ${yMin} ${yMax} ${zMin} ${zMax}
-create_grid      ${xNcells} ${yNcells} 1
+create_grid      ${xNcells} ${yNcells} ${zNcells}
 
 # enabling parallel computation 
 balance_grid     rcb part 

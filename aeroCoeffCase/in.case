@@ -213,12 +213,12 @@ compute         nrho_N2            grid            all     m_N2         nrho    
 compute         traTemperatureMIX  thermal/grid    all     atmoMars     temp    # translational temperature of the whole mixture
 compute         traTemperatureCO2  thermal/grid    all     m_CO2        temp    # translational temperature of the CO2
 compute         traTemperatureN2   thermal/grid    all     m_N2         temp    # translational temperature of the N2 
-compute         vibTemperatureMIX  grid		   all     atmoMars     tvib    # vibrational temperature of the whole mixture 
-compute         vibTemperatureCO2  grid		   all     m_CO2        tvib    # vibrational temperature of CO2 
-compute         vibTemperatureN2   grid 	   all     m_N2         tvib    # vibrational temperature of N2 
-compute         rotTemperatureMIX  grid 	   all     atmoMars     trot    # rotational temperature of the whole mixture 
-compute         rotTemperatureCO2  grid		   all     m_CO2        trot    # rotational temperature of CO2 
-compute         rotTemperatureN2   grid		   all     m_N2         trot    # rotational temperature of N2 
+compute         vibTemperatureMIX  grid		       all     atmoMars     tvib    # vibrational temperature of the whole mixture 
+compute         vibTemperatureCO2  grid		       all     m_CO2        tvib    # vibrational temperature of CO2 
+compute         vibTemperatureN2   grid 	       all     m_N2         tvib    # vibrational temperature of N2 
+compute         rotTemperatureMIX  grid 	       all     atmoMars     trot    # rotational temperature of the whole mixture 
+compute         rotTemperatureCO2  grid		       all     m_CO2        trot    # rotational temperature of CO2 
+compute         rotTemperatureN2   grid		       all     m_N2         trot    # rotational temperature of N2 
 
 # compute translational temperature and number density for the moment
 # averaged number of parcels computation 
