@@ -70,7 +70,7 @@ variable	dt		    equal 	${timeInterval}/${Ntau}
 # simulation space interval -- using post-shock conditions and the engineering/simulation relaxation
 variable	ds 		    equal 	${meanFreePathFS}/${Nlam}
 #SET TO FREESTREAM CONDITION -> if it doesn't satisfy  change it
-variable        NumberTrueCell      equal       ${numberDensity}*${ds}*${ds}*${ds}
+variable        NumberTrueCell      equal       ${numberDensity}*${ds}*${ds}*1 #z cell width is just 1 
 # number of simulated particles -- post-shock
 variable        Wp                  equal       ${NumberTrueCell}/${NumberSimCell}
 # getting cell properties

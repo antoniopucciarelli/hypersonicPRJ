@@ -111,10 +111,19 @@ fix              adaptgrid          adapt 1000 all refine coarsen value f_avg_mf
 run              3000
 
 # unfixing properties and grid adaptation procedure 
+unfix            adaptgrid
+
+# adapting the grid near surface
+fix     adaptgrid   adapt   1000 all refine surf all 0.01 # iterate 2          >
+
+# running again with grid adaptation enabled close to the capsule surface
+run     3000
+
+# disable grid adaptation 
 unfix            avg_nrho
 unfix            avg_temp_tra
 unfix            avg_mfp
-unfix            adaptgrid
+unfix   	 adaptgrid
 
 # FLOW PROPERTIES COMPUTATION
 # density number | speed | number of parcels 
