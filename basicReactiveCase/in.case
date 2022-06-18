@@ -67,7 +67,7 @@ surf_collide     scoll      diffuse ${T_w} ${a_w}
 surf_modify      all        collide scoll
 
 # setting up collision properties from .vss file
-collide          vss        marsAtmo marsAtmosphere.vss
+collide          vss        marsAtmo collisionProperties/marsAtmosphere.vss
 collide_modify   vibrate    smooth
 
 # enabling chemistry
@@ -105,7 +105,7 @@ variable	minth            equal		${meanFreePathFS}
 variable	maxth		 equal		10*${meanFreePathFS}
 
 # grid adaptation 
-fix              adaptgrid          adapt 1000 all refine coarsen value f_avg_mfp[2] minth maxth thresh less more  
+fix              adaptgrid          adapt 1000 all refine coarsen value f_avg_mfp[2] ${minth} ${maxth} thresh less more  
 
 # second run for the grid adaptation 
 run              3000
@@ -119,10 +119,10 @@ unfix            adaptgrid
 # FLOW PROPERTIES COMPUTATION
 # density number | speed | number of parcels 
 compute          n                  grid            all     marsAtmo                        n
-compute          nrho               grid            all     marsAtmo                        nrho
+# compute          nrho               grid            all     marsAtmo                        nrho
 compute          vel                grid            all     marsAtmo                        u v w
 # temperature
-compute          temp_tra           thermal/grid    all     marsAtmo                        temp
+# compute          temp_tra           thermal/grid    all     marsAtmo                        temp
 compute          temp_rot           grid            all     marsAtmo                        trot
 compute          temp_vib           grid            all     marsAtmo                        tvib
 # density number

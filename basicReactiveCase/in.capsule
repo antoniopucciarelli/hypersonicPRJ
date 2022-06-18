@@ -39,11 +39,11 @@ variable	zMax		    equal	0.5				# maximum z of the grid
 				
 # asymptotic condition for simulation -> from 1997 Moss journal
 # flow speed 
-variable        Uflow               equal        7463.1    
+variable        Uflow               equal        7472.8    
 # Knudsen number 
-variable        KnudsenNumber       equal        6.954
+variable        KnudsenNumber       equal        0.446
 # wall temperature and accomodation coefficient
-variable        T_w  		    equal	 389
+variable        T_w  		    equal	 560
 variable        a_w    		    equal 	 1.0
 
 # variables computations
