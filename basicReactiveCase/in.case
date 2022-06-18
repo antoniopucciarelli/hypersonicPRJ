@@ -26,14 +26,14 @@ boundary         oo ao pp
 
 # domani generation and initial discretization
 create_box       ${xMin} ${xMax} ${yMin} ${yMax} ${zMin} ${zMax}
-create_grid      ${xNcells} ${yNcells} ${zNcells}
+create_grid      ${xNcells} ${yNcells} 1
 
 # enabling parallel computation 
 balance_grid     rcb part 
 fix              loadbalance balance 1000 1.1 rcb part
 
 # flow properties and timestep
-global           fnum ${Fnum} weight cell radius
+global           fnum ${Wp} weight cell radius
 timestep         ${dt}
 
 # MIXTURE SETUP 
@@ -41,7 +41,7 @@ timestep         ${dt}
 species          collisionProperties/marsAtmosphere.species CO2 O2 C2 CO O C
 
 # Mars atmosphere setup
-mixture          marsAtmo   CO2 O2 C2 CO O C    vstream ${Uflow} 0.0 0.0 temp ${T_FS} nrho ${n_FS}          # mixture declaration 
+mixture          marsAtmo   CO2 O2 C2 CO O C    vstream ${Uflow} 0.0 0.0 temp ${Tflow} nrho ${numberDensity}          # mixture declaration 
 mixture          marsAtmo   CO2                 frac 1.0                                                    # molar fraction of CO2
 mixture          marsAtmo   O2                  frac 0.0                                                    # molar fraction of O2
 mixture          marsAtmo   C2                  frac 0.0                                                    # molar fraction of C2
@@ -100,8 +100,12 @@ fix              avg_temp_tra       ave/grid        all     10 100 1000 c_temp_t
 compute          mfp                lambda/grid     f_avg_nrho[*] f_avg_temp_tra[*] CO2 kall
 fix              avg_mfp            ave/grid        all     1 1 1000 c_mfp[*] ave one
 
+#threshold for adaptation
+variable	minth            equal		${meanFreePathFS}
+variable	maxth		 equal		10*${meanFreePathFS}
+
 # grid adaptation 
-fix              adaptgrid          adapt 1000 all refine coarsen value f_avg_mfp[2] 0.2 0.9 thresh less more 
+fix              adaptgrid          adapt 1000 all refine coarsen value f_avg_mfp[2] minth maxth thresh less more  
 
 # second run for the grid adaptation 
 run              3000
@@ -132,6 +136,7 @@ compute          nrho_C             grid            all     m_C                 
 compute          pressure           surf            all     marsAtmo                        press px py pz
 compute          shear              surf            all     marsAtmo                        shx shy shz
 compute          heat_flux          surf            all     marsAtmo                        etot
+compute          fdrag              surf            all     marsAtmo                        fx
 
 # averaging in time 
 fix              avg_n              ave/grid        all     10 100 1000 c_n[*]              ave running
@@ -149,6 +154,7 @@ fix              avg_nrho_C         ave/grid        all     10 100 1000 c_nrho_C
 fix              avg_pressure       ave/surf        all     10 100 1000 c_pressure[*]       ave running
 fix              avg_shear          ave/surf        all     10 100 1000 c_shear[*]          ave running
 fix              avg_heat_flux      ave/surf        all     10 100 1000 c_heat_flux[*]      ave running
+fix 		 avg_fdrag	    ave/surf        all     10 100 1000 c_fdrag[*]  	    ave running
 
 # RESULTS ALLOCATION AND DEFINITIONS
 # directories generation 
@@ -166,7 +172,7 @@ dump            dumpall  grid   all  1000 ./DUMP/flow_field.* id proc           
                 f_avg_nrho_CO2  f_avg_nrho_O2   f_avg_nrho_C2   f_avg_nrho_CO  f_avg_nrho_O f_avg_nrho_C
 
 dump             dumpSurf surf   all  1000 ./DUMP/surf_heat_flux.* id & 
-                 f_avg_pressure[*] f_avg_shear[*] f_avg_heat_flux[*] 
+                 f_avg_pressure[*] f_avg_shear[*] f_avg_heat_flux[*] f_avg_fdrag[*]
 
 # running case
 run              10000
