@@ -157,6 +157,7 @@ shell 		mkdir dump/Kn${iK}
 shell		mkdir dump/Kn${iK}/Ma${iM}
 shell 		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}
 shell       mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/GRID
+shell       mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/SURF
 shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/force
 shell       mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/flowField
 shell		mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/forceAverage
@@ -244,7 +245,7 @@ fix             avg_rotTempN2      ave/grid        all     10 100 1000  c_rotTem
 
 # save grid and dump file
 write_grid      ./dump/Kn${iK}/Ma${iM}/AOA${iA}/GRID/parentGrid
-
+write_surf   	./dump/Kn${iK}/Ma${iM}/AOA${iA}/SURF/data.surf
 # dump setup 
 dump            dumpall  grid   all  1000 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/flowField/flowField.* id proc & 
                 f_avg_n                                             & 

@@ -24,16 +24,18 @@ yy = data[:,1]
 #put the shield in the origin and mirror x coordinate
 xx = xx - max(xx)
 xx = -xx
+#start from x = 0 to have there id 0
+xx = np.flip(xx)
+yy = np.flip(yy)
 #add specular component
 xx_add = np.flip(xx[1:-1])
 yy_add = - np.flip(yy[1:-1])
 
+#start with the
 xx = np.concatenate([xx, xx_add])
 yy = np.concatenate([yy, yy_add])
 
-#change rotation law
-xx = np.flip(xx)
-yy = np.flip(yy)
+#not necessary to change rotation law since I flipped early
 
 plt.figure(1)
 plt.plot(xx,yy)

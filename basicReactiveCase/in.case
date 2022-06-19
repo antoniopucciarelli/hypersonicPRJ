@@ -1,4 +1,4 @@
-# hypersonic reactive flow simulation of a capsule that is entering in the martian atmosphere 
+ù# hypersonic reactive flow simulation of a capsule that is entering in the martian atmosphere 
 # authors:
 #	antonio pucciarelli
 #	raffaele tirotta
@@ -169,10 +169,11 @@ fix 		 avg_fdrag	    ave/surf        all     10 100 1000 c_fdrag[*]  	    ave ru
 # directories generation 
 shell            mkdir GRID
 shell            mkdir DUMP
-
+shell		 mkdir SURF
 # saving grid 
 write_grid       ./GRID/parent_grid
-
+# saving clipped surface
+write_surf	 ./SURF/data.orion_clip
 # dumping setup 
 dump            dumpall  grid   all  1000 ./DUMP/flow_field.* id proc                                   &
                 f_avg_n         f_avg_nrho                                                              &
