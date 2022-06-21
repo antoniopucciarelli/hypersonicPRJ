@@ -14,7 +14,7 @@ variable	nMach			equal	1			# Mach
 variable	nAOA			equal	1			# angle of attack 
 
 # setting up mixture properties
-variable	gammaMixture	equal	1.289			# specific heat ratio		
+variable	gammaMixture	equal	1.4			# specific heat ratio		
 variable	boltzConstant	equal   1.38E-23	# Boltzmann constant declaration
 
 # setting up Mach number interval extremes

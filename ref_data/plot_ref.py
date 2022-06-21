@@ -175,8 +175,7 @@ R = YCO2*RCO2 + YN2*RN2
 #asyntotic condition -> T is high enough for activation of rotational dof not
 #for vibrational ones
 cvN2  = (3/2+1)*RN2   #sum of contribution of internal and rotational energy level
-cvCO2 = (3/2 + 2)*RCO2 # each rotational 1/2*R -> CO2 is not bi-molecular
-                       # so rotational energy level is higher
+cvCO2 = (3/2 + 1)*RCO2 # CO2 is a linear molecule so has just 2 dof
 
 #mixture cv and cp
 cv = YCO2*cvCO2 + YN2*cvN2
