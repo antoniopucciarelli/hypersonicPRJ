@@ -9,6 +9,7 @@
 # stefano.boccelli@gmail.com
 
 # added N2, N and NO
+# added CN also
 
 # ------ Reaction 1) CO2 + M --> CO + O + M --------
 
@@ -28,6 +29,9 @@ CO2 + N2  --> CO + O + N2
 D A 1.0 8.732e-19 1.145e-8 -1.5 -8.732e-19
 
 CO2 + NO  --> CO + O + NO
+D A 1.0 8.732e-19 1.145e-8 -1.5 -8.732e-19
+
+CO2 + CN  --> CO + O + CN
 D A 1.0 8.732e-19 1.145e-8 -1.5 -8.732e-19
 # ------- Reaction 2) CO2 + A --> CO + O + A ---------
 
@@ -69,6 +73,9 @@ D A 1.0 9.88e-19 2.49e-14 0.0 -9.88e-19
 C2 + N2 --> C + C + N2
 D A 1.0 9.88e-19 2.49e-14 0.0 -9.88e-19
 
+C2 + CN --> C + C + CN
+D A 1.0 9.88e-19 2.49e-14 0.0 -9.88e-19
+
 # -------- Reaction 4) CO + M --> C + O + M ----------
 
 CO + CO2 --> C + O + CO2
@@ -87,6 +94,9 @@ CO + N2 --> C + O + N2
 D A 1.0 1.78e-18 3.82e-10 -1.0 -1.78e-18
 
 CO + NO --> C + O + NO
+D A 1.0 1.78e-18 3.82e-10 -1.0 -1.78e-18
+
+CO + CN --> C + O + CN
 D A 1.0 1.78e-18 3.82e-10 -1.0 -1.78e-18
 
 # --------- Reaction 5) CO + A --> C + O + A ---------
@@ -118,6 +128,9 @@ O2 + N2 --> O + O + N2
 D A 1.0 8.245e-19 3.321e-9 -1.5 -8.245e-19
 
 O2 + NO --> O + O + NO
+D A 1.0 8.245e-19 3.321e-9 -1.5 -8.245e-19
+
+O2 + CN --> O + O + CN
 D A 1.0 8.245e-19 3.321e-9 -1.5 -8.245e-19
 
 # --------- Reaction 7) O2 + A --> O + O + A -----------
@@ -186,6 +199,9 @@ D A 1.0 1.56E-18 1.1624E-08 -1.6 -1.56E-18
 N2 + NO --> N + N + NO
 D A 1.0 1.56E-18 1.1624E-08 -1.6 -1.56E-18
 
+N2 + CN --> N + N + CN
+D A 1.0 1.56E-18 1.1624E-08 -1.6 -1.56E-18
+
 #----------- Reaction 12) N2 + A --> N + N + A ---------
 
 N2 + C --> N + N + C
@@ -217,6 +233,9 @@ D A 1.0 1.04E-18 8.3029E-15 0.0 -1.04E-18
 NO + NO --> N + O + NO
 D A 1.0 1.04E-18 8.3029E-15 0.0 -1.04E-18
 
+NO + CN --> N + O + CN
+D A 1.0 1.04E-18 8.3029E-15 0.0 -1.04E-18
+
 #----------- Reaction 14) NO + A --> N + O + A ---------
 
 NO + C --> N + O + C
@@ -230,7 +249,7 @@ D A 1.0 1.04E-18 1.8266E-15 0.0 -1.04E-18
 
 # LET'S START WITH EXCHANGE REACTIONS
 
-#----------- Reaction 14) NO + O --> N + O2    ---------
+#----------- Reaction 15) NO + O --> N + O2    ---------
 
 NO + O --> N + O2
 E A 0.0 2.68E-19 1.3949E-17 0.0 -2.68E-19
@@ -239,12 +258,73 @@ E A 0.0 2.68E-19 1.3949E-17 0.0 -2.68E-19
 N + O2 --> NO + O
 E A 0.0 2.0E-20  4.0E-15   -0.39 2.68E-19
 
-#----------- Reaction 14) N2 + O --> N0 + N    ---------
+#----------- Reaction 16) N2 + O --> N0 + N    ---------
 N2 + O --> N0 + N
 E A 0.0 5.29E-19 1.0628E-12 -1.0 -5.29E-19
 
 # INVERSE REACTION paper different from Bariselli scriptfor air 5
 NO + N --> N2 + O
 E A 0.0 2.0E-20  5.0E-16   -0.35 5.29E-19
+
+# ADDING REACTIONS FOR CN 
+
+# DISSOCIATION REACTION
+
+#----------- Reaction 17) CN + A/M --> C + N + A/M    ---------
+CN + CO2 --> C + N + CO2
+D A 1.0 9.798E-19 4.2012E-16 0.0 -9,798E-19
+
+CN + CO --> C + N + CO
+D A 1.0 9.798E-19 4.2012E-16 0.0 -9,798E-19
+
+CN + C2 --> C + N + C2
+D A 1.0 9.798E-19 4.2012E-16 0.0 -9,798E-19
+
+CN + O2 --> C + N + O2
+D A 1.0 9.798E-19 4.2012E-16 0.0 -9,798E-19
+
+CN + C --> C + N + C
+D A 1.0 9.798E-19 4.2012E-16 0.0 -9,798E-19
+
+CN + O --> C + N + O
+D A 1.0 9.798E-19 4.2012E-16 0.0 -9,798E-19
+
+CN + N --> C + N + N
+D A 1.0 9.798E-19 4.2012E-16 0.0 -9,798E-19
+
+CN + NO --> C + N + NO
+D A 1.0 9.798E-19 4.2012E-16 0.0 -9,798E-19
+
+CN + N2 --> C + N + N2
+D A 1.0 9.798E-19 4.2012E-16 0.0 -9,798E-19
+
+CN + CN --> C + N + CN
+D A 1.0 9.798E-19 4.2012E-16 0.0 -9,798E-19
+
+# EXCHANGE REACTIONS
+
+#----------- Reaction 18) C + N2 --> CN + N    ---------
+C + N2 --> CN + N
+E A 0.0 3.12E-19 8.701E-17 0.0 -3.12E19
+# NEGLECTED INVERSE REACTION
+
+#----------- Reaction 19) CN + C --> C2 + N    ---------
+CN + C --> C2 + N
+E A 0.0 1.794E-19 8.3029E-17 0.0 -1.794E-19
+# NEGLECTED INVERSE REACTION
+
+#----------- Reaction 20) CO + N --> CN + O    ---------
+E A 0.0 5.3268E-19 1,66E-16 0.0 -5.3268E-19
+# NEGLECTED INVERSE REACTION
+
+#----------- Reaction 21) CN + O --> NO + C    ---------
+CN + O --> NO + C
+E A 0.0 2.0148E-19 2.6569E-17 0.1 -2.0148E-19
+# NEGLECTED INVERSE REACTION
+
+#----------- Reaction 22) C2 + N2 --> CN + CN  ---------
+C2 + N2 --> CN + CN
+E A 0.0 2.898E-19 2.4909E-17 0.0 -2.898E-19
+# NEGLECTED INVERSE REACTION
 
 
