@@ -105,10 +105,9 @@ C + O2 --> CO + O
 E A 0.0 9.55e-19 3.32e-17 0.0 9.55e-19
 
 # # ---------- Reaction 9) CO + C -> C2 + O --------------
-# Even if it is considered production of C2 is really low
-# so neglected
-#CO + C --> C2 + O
-#E A 0.0 8.0e-19 3.32e-13 -1.0 -8.0e-19
+# Perhaps production of CO2 is higher for lower altitude -> keep it
+CO + C --> C2 + O
+E A 0.0 8.0e-19 3.32e-13 -1.0 -8.0e-19
 # # Inverse reaction
 # C2 + O --> CO + C
 # AAAAAAAAAAAAAAAAAAAAAAA
