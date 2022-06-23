@@ -9,9 +9,9 @@
 
 # VARIABLES DECLARATION
 # setting up number of iterations in each loop 
-variable	nKnudsen		equal	1			# Knudsen
-variable	nMach			equal	1			# Mach 
-variable	nAOA			equal	1			# angle of attack 
+variable	nKnudsen		equal	3			# Knudsen
+variable	nMach			equal	3			# Mach 
+variable	nAOA			equal	4			# angle of attack 
 
 # setting up mixture properties
 variable	gammaMixture	equal	1.4			# specific heat ratio		
@@ -19,7 +19,7 @@ variable	boltzConstant	equal   1.38E-23	# Boltzmann constant declaration
 
 # setting up Mach number interval extremes
 variable	minMach		equal	10				# minimum Mach number 
-variable	maxMach		equal	25				# maximum Mach number 
+variable	maxMach		equal	30				# maximum Mach number 
 
 # setting up Knudsen number interval extremes
 variable	minKnudsen	equal	0.25			# minimum Knudsen number
@@ -27,7 +27,7 @@ variable	maxKnudsen	equal	0.5				# maximum Knudsen number
 
 # setting up angle of attack interval extremes
 variable	minAOA		equal	0				# minimum angle of attack
-variable	maxAOA		equal	30				# maximum angle of attack 
+variable	maxAOA		equal	28				# maximum angle of attack 
 
 # setting up flow temperature
 variable	Tflow		equal	300				# flow temperature
@@ -82,15 +82,15 @@ variable iK loop ${nKnudsen}
 				
 				# variables computations
 				# AOA
-				variable 	thetaAngle 	equal 	${iA}*5
+				variable 	thetaAngle 	equal 	(${iA}-1)*7
 				# sound speed 
 				variable	cSpeed		equal	sqrt(${gammaMixture}*${Rmixt}*${Tflow})
 				# Mach number 
-				variable	MachNumber	equal	${minMach}+(${maxMach}-${minMach})/${nMach}*${iM}
+				variable	MachNumber	equal	${minMach}+(${maxMach}-${minMach})/(${nMach}-1)*(${iM}-1)
 				# flow speed 
 				variable	Uflow		equal	${MachNumber}*${cSpeed}
 				# Knudsen number 
-				variable	KnudsenNumber	equal 	${minKnudsen}+(${maxKnudsen}-${minKnudsen})/${nKnudsen}*${iK}
+				variable	KnudsenNumber	equal 	${minKnudsen}+(${maxKnudsen}-${minKnudsen})/(${nKnudsen}-1)*(${iK}-1)
 				# Lambda free stream
                                 variable        meanFreePathFS  equal   ${KnudsenNumber}*${L}
 				# number density -- pre-shock

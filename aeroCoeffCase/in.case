@@ -98,25 +98,25 @@ stats           100
 stats_style     step    cpu     c_forceTOT[1]   c_forceTOT[2]   c_heatTOT
 
 # doing the first run of the case in order to get a first approximation of the total drag force 
-run     2000 
+run     3000 
 
 # define the region where to refine/coarsen
 region  adaptreg    cylinder x 0.0 0.0 2.5 0 10 side out                                    # axis | origin coords (y, z) | radius | height | side
 
 # grid adaptation
-fix     adaptgrid   adapt   1000 all refine particle 30 1                                   # whole system grid adaptation based on parcels number
+fix     adaptgrid   adapt   1000 all refine particle 50 1                                   # whole system grid adaptation based on parcels number
 
 # running again for the grid adaptation
 run     3000
 
 # unfixing grid 
-unfix   adaptgrid 
+#unfix   adaptgrid 
 
 # adapting the grid near surface
-fix     adaptgrid   adapt   1000 all refine surf all 0.01 # iterate 2                         # surface cells grid adaptation not smaller than 1 cm and 2 iterations on the mesh refinement -> no vector components for the surface elements check
+#fix     adaptgrid   adapt   1000 all refine surf all 0.01 # iterate 2                         # surface cells grid adaptation not smaller than 1 cm and 2 iterations on the mesh refinement -> no vector components for the surface elements check
 
 # running again with grid adaptation enabled close to the capsule surface
-run     3000
+#run     3000
 
 # disable grid adaptation 
 unfix   adaptgrid
@@ -168,11 +168,11 @@ shell       mkdir dump/Kn${iK}/Ma${iM}/AOA${iA}/heatFluxAverage
 label checkConvergenceLabel
 
 # drag force storage
-dump		dataDumpForce 			surf all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/force/xyForce.* 		        	c_FORCEs[1]     c_FORCEs[2] 
+dump		dataDumpForce 			surf all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/force/xyForce.*    id	c_FORCEs[1]     c_FORCEs[2] 
 # averaged drag force storage
-dump 		dataDumpForceAverage 	surf all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/forceAverage/xyForceAverage.*  	f_forceAVE2[1]  f_forceAVE2[2]
+dump 		dataDumpForceAverage 	surf all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/forceAverage/xyForceAverage.*   id 	f_forceAVE2[1]  f_forceAVE2[2]
 # averaged heat flux at capsule surface 
-dump        dataDumpHeatFluxAverage surf all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/heatFluxAverage/heatFluxAverage.*  f_heatAVE2
+dump        dataDumpHeatFluxAverage surf all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/heatFluxAverage/heatFluxAverage.* id  f_heatAVE2
 # figure printout 
 dump       	figureDump              image all 400 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/parcelsImage/image.*.ppm & 
                                     type type pdiam 0.01 surf proc 0.01 size 512 512 zoom 1.75 gline no 0.005 
@@ -242,6 +242,8 @@ fix             avg_vibTempN2      ave/grid        all     10 100 1000  c_vibTem
 fix             avg_rotTempMIX     ave/grid        all     10 100 1000  c_rotTemperatureMIX[*]  ave running
 fix             avg_rotTempCO2     ave/grid        all     10 100 1000  c_rotTemperatureCO2[*]  ave running
 fix             avg_rotTempN2      ave/grid        all     10 100 1000  c_rotTemperatureN2[*]   ave running
+fix             avg_heat_flux      ave/surf        all     10 100 1000  c_heatFlux[*]      ave running
+fix             avg_forces          ave/surf        all     10 100 1000 c_FORCEs[*]          ave running
 
 # save grid and dump file
 write_grid      ./dump/Kn${iK}/Ma${iM}/AOA${iA}/GRID/parentGrid
@@ -254,9 +256,11 @@ dump            dumpall  grid   all  1000 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/flowFi
                 f_avg_traTempMIX f_avg_traTempCO2 f_avg_traTempN2   & 
                 f_avg_vibTempMIX f_avg_vibTempCO2 f_avg_vibTempN2   &
                 f_avg_rotTempMIX f_avg_rotTempCO2 f_avg_rotTempN2
+# dump surf quantities
+dump             dumpSurf surf   all  1000 ./dump/Kn${iK}/Ma${iM}/AOA${iA}/flowField/surf_heat_flux.* id f_avg_forces[*] f_avg_heat_flux[*] 
 
 # final run for the most accurate dump of the simulation 
-run     10000
+run     16000
 
 # undumping features
 undump  dumpall
