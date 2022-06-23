@@ -1,0 +1,7 @@
+#!/bin/sh
+
+echo "stl conversion to SPARTA geometry file"
+pvpython stl2surf.py geometry/orion_simple.stl geometry/data.orionSimple
+
+echo "running simulation in parallel"
+mpirun -np 4 ./spa_mpi -in in.capsule
