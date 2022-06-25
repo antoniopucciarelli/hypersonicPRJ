@@ -1,0 +1,38 @@
+# NOTE: This file is simplified, and contains inaccurate vibrational relaxation numbers
+#       for C2 and CO. I just copied these values from O2. 
+#       Reconsider this point if you want to use this input file in real life. For the 
+#       exam project it is completely fine. 
+#       Observation: having an inaccurate vibration relaxation number for some (minor?) 
+#       species means that the vibrational nonequilibrium may differ a bit from reality.
+#       But please bear in mind that the model itself for vibrational relaxation is VERY 
+#       approximated (besides the crude assumption here)! 
+#
+#       Anyway, if you find better data, please let us know at:
+#       federico.bariselli@gmail.com
+#       stefano.boccelli@gmail.com
+# 
+# NOTE2: Pay attention: do not leave any trailing white space after a line (except for a 
+#        commented line). SPARTA will fail to read such line and throw some cryptic error.
+#
+# NOTE3: The vib temp for C2 was taken from Mutation++
+# 
+# ID
+# Molwt (amu)
+# Molmass (kg)
+# Rotational dof
+# RotRel
+# Vibrational dof
+# VibRel
+# VibTemp (K)
+# species wt
+# charge
+
+CO2 44.0    7.31E-26  2    0.2   6    0.05          959.0     1.0      0.0
+#RAF: commented because chemistry disable -> might be unused
+O2  32.0    5.31E-26  2    0.2   2    5.58659E-5    2256.0    1.0      0.0
+C2  24.0    3.98E-26  2    0.2   2    5.58659E-5    2603.55   1.0      0.0
+CO  28.0    4.65E-26  2    0.2   2    5.58659E-5    3103.0    1.0      0.0
+O   16.0    2.65E-26  0    0.0   0    0.0           0.0       1.0      0.0
+C   12.0    1.99E-26  0    0.0   0    0.0           0.0       1.0      0.0
+#RAF: N2 was added in respect to the script provided by Bariselli
+N2  28.016   4.65E-26  2    0.2   2    1.90114E-5    3371.0    1.0      0.0

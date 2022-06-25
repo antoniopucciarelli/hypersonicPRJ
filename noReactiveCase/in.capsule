@@ -1,0 +1,105 @@
+# hypersonic reactive flow simulation of a capsule that is entering in the martian atmosphere 
+# authors:
+#	antonio pucciarelli
+#	raffaele tirotta
+#
+# aim:
+# --- compute flow properties with chemistry enabled for an 2D axialsymmetric simulation
+# --- chemistry based on all the possible molucules made by C and O 
+#
+
+# VARIABLES DECLARATION
+# setting up mixture properties
+variable	gammaMixture	equal	1.4	        # specific heat ratio		
+variable	boltzConstant	equal   1.38E-23	    # Boltzmann constant declaration
+
+# setting up flow temperature
+variable	Tflow		    equal	137.4				# flow temperature
+
+# setting up flow mean properties
+#variable	N2mass		    equal	4.65E-26		# averaged mixture weight	
+variable	N2diameter	    equal	4.17E-10		# averaged mixture molecule dimension
+variable        Rmixt               equal       192.11          # averaged gas constant
+
+# NUMBER OF SIMULATED PARTICLES IN ONE CELL
+variable	NumberSimCell	equal	20	            # number of parcels for every number density
+
+# setting up simulation study values for a proper time/space analysis of the hypersonic flow 
+variable	Nlam		    equal	4				# space 
+variable	Ntau		    equal	4				# time 
+
+# setting up domain properties
+variable	L		    equal 	5				# reference length 
+variable	xMin		    equal	-10				# minimum x of the grid 
+variable 	xMax		    equal 	10				# maximum x of the grid 
+variable 	yMin		    equal	0				# minimum y of the grid 
+variable	yMax		    equal	10				# maximum y of the grid 
+variable	zMin		    equal	-0.5				# minimum z of the grid 
+variable	zMax		    equal	0.5				# maximum z of the grid 
+				
+# asymptotic condition for simulation -> from 1997 Moss journal
+# flow speed 
+variable        Uflow               equal        7477.3    
+# Knudsen number 
+variable        KnudsenNumber       equal        0.117
+# wall temperature and accomodation coefficient
+variable        T_w  		    equal	 675
+variable        a_w    		    equal 	 1.0
+
+# variables computations
+# sound speed 
+variable	cSpeed		    equal	sqrt(${gammaMixture}*${Rmixt}*${Tflow})
+# Mach number 
+variable	MachNumber   	    equal       ${Uflow}/${cSpeed}
+# Lambda free stream
+variable        meanFreePathFS      equal       ${KnudsenNumber}*${L}
+# number density -- pre-shock
+variable	numberDensity	    equal	1.0/(sqrt(2)*${KnudsenNumber}*${L}*PI*${N2diameter}^2)
+# number density -- post-shock
+variable	numberDensityPS     equal   	(${gammaMixture}+1)/(${gammaMixture}-1)*${numberDensity}
+# flow temperature -- post-shock
+variable	TflowPS		    equal	${numberDensity}/${numberDensityPS}*${Uflow}^2/(3*${Rmixt})
+# mean free path -- post-shock
+variable	meanFreePathPS 	    equal	1.0/(sqrt(2)*${numberDensityPS}*PI*${N2diameter}^2)
+# thermal speed -- post-shock
+variable	thermalSpeed	    equal	sqrt((8*${Rmixt}*${TflowPS})/(PI))
+# collision time interval -- post-shock
+variable	timeInterval	    equal	1.0/(${numberDensityPS}*PI*${N2diameter}^2*${thermalSpeed})
+# simulation time interval -- using post-shock conditions and the engineering/simulation relaxation
+variable	dt		    equal 	${timeInterval}/${Ntau}  
+# simulation space interval -- using post-shock conditions and the engineering/simulation relaxation
+variable	ds 		    equal 	${meanFreePathFS}/${Nlam}
+#SET TO FREESTREAM CONDITION -> if it doesn't satisfy  change it
+variable        NumberTrueCell      equal       ${numberDensity}*${ds}*${ds} #z cell width is just 1 
+# number of simulated particles -- post-shock
+variable        Wp                  equal       ${NumberTrueCell}/${NumberSimCell}*3        # *6*30*2
+# getting cell properties
+variable	xNcells		    equal	round((${xMax}-${xMin})/${ds}) 	# x direction	
+variable	yNcells		    equal       round((${yMax}-${yMin})/${ds})	# y direction
+
+
+# printing values
+print " "
+print "--- sound speed                   = ${cSpeed}"
+print "--- Mach number	                 = ${MachNumber}"
+print "--- Knudsen number                = ${KnudsenNumber}"
+print "--- flow speed                    = ${Uflow}"
+print "--- number density    *PRE-SHOCK* = ${numberDensity}"
+print "--- number density   *POST-SHOCK* = ${numberDensityPS}"
+print "--- flow temperature *POST-SHOCK* = ${TflowPS}"
+print "--- mean free path   *POST-SHOCK* = ${meanFreePathPS}"
+print "--- thermal speed	             = ${thermalSpeed}"
+print "--- collision time interval       = ${timeInterval}"
+print "--- ds				  			 = ${ds}"
+print "--- dt				  			 = ${dt}"
+print "--- X cells			  			 = ${xNcells}"
+print "--- Y cells			  			 = ${yNcells}"
+print " "
+
+# running case 
+include     in.case
+
+# end of the simulation message with the total number of simulations
+print " "
+print "*** end of C and O atoms based simulation ***"
+print " " 

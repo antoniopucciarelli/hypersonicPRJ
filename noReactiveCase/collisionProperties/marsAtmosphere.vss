@@ -1,0 +1,33 @@
+# VSS collision model parameters for each species.
+# 
+# THE VSS DATA IS TAKEN FROM: 
+# "DSMC Simulations of Mars Science Laboratory Entry 
+# from Rarefied to Continuum Conditions", Borner et al, 31st RGD.
+#
+# NOTE: this file contains more species than you may actually need!!!!!
+# CONSIDER THE REACTIONS IN THE TCE FILE AND THE SPECIES IN CO2.species!!!!
+
+# diameter (m)
+# omega
+# tref
+# alpha
+
+#RAF: commented -> no chemistry -> unused
+CO2  4.147E-10    0.632   273.0   1.259
+O2   3.896E-10    0.7     273.0   1.463
+N2   4.04E-10     0.686   273.0   1.424
+O    3.6920E-10   0.803   273.0   1.582
+N    3.697E-10    0.79    273.0   1.486
+NO   4.218E-10    0.737   273.0   1.542
+CO   4.684E-10    0.787   273.0   1.494
+C    4.983E-10    0.883   273.0   1.523
+
+# VSS DATA FOR C2 IS COPIED FROM CO
+# This is a bit inaccurate but may be OK. For the exam project, this is definitely OK.
+# 
+# If you find better VSS data for C2, please let us know at:
+# stefano.boccelli@gmail.com
+# federico.bariselli@gmail.com
+
+C2   4.684E-10    0.787   273.0   1.494
+
