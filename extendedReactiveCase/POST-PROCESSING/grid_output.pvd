@@ -23,7 +23,5 @@
              file="grid_output/grid_output_21000.pvtu"/>
     <DataSet timestep="22000" group="" part="0"   
              file="grid_output/grid_output_22000.pvtu"/>
-    <DataSet timestep="23000" group="" part="0"   
-             file="grid_output/grid_output_23000.pvtu"/>
    </Collection>    
 </VTKFile>    

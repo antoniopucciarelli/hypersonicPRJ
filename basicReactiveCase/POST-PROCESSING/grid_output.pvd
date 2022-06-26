@@ -3,6 +3,16 @@
                byte_order="LittleEndian"
                compressor="vtkZLibDataCompressor">
    <Collection>    
+    <DataSet timestep="8000" group="" part="0"   
+             file="grid_output/grid_output_8000.pvtu"/>
+    <DataSet timestep="9000" group="" part="0"   
+             file="grid_output/grid_output_9000.pvtu"/>
+    <DataSet timestep="10000" group="" part="0"   
+             file="grid_output/grid_output_10000.pvtu"/>
+    <DataSet timestep="11000" group="" part="0"   
+             file="grid_output/grid_output_11000.pvtu"/>
+    <DataSet timestep="12000" group="" part="0"   
+             file="grid_output/grid_output_12000.pvtu"/>
     <DataSet timestep="13000" group="" part="0"   
              file="grid_output/grid_output_13000.pvtu"/>
     <DataSet timestep="14000" group="" part="0"   
