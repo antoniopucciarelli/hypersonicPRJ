@@ -4,7 +4,7 @@
 \beamer@subsectionintoc {2}{1}{Collision Modeling}{4}{0}{2}
 \beamer@subsectionintoc {2}{2}{Reactions}{6}{0}{2}
 \beamer@sectionintoc {3}{Results}{8}{0}{3}
-\beamer@subsectionintoc {3}{1}{$C$ \& $O$}{10}{0}{3}
-\beamer@subsectionintoc {3}{2}{$C$, $O$, $N$ \& $e^{-}$}{12}{0}{3}
-\beamer@subsectionintoc {3}{3}{$C$ \& $O$ vs $C$, $O$, $N$ \& $e^{-}$}{14}{0}{3}
-\beamer@sectionintoc {4}{References}{20}{0}{4}
+\beamer@subsectionintoc {3}{1}{$C$ \& $O$}{9}{0}{3}
+\beamer@subsectionintoc {3}{2}{$C$, $O$, $N$ \& $e^{-}$}{11}{0}{3}
+\beamer@subsectionintoc {3}{3}{$C$ \& $O$ vs $C$, $O$, $N$ \& $e^{-}$}{13}{0}{3}
+\beamer@sectionintoc {4}{References}{14}{0}{4}

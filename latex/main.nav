@@ -27,37 +27,33 @@
 \headcommand {\sectionentry {3}{Results}{8}{Results}{0}}
 \headcommand {\slideentry {3}{0}{1}{8/8}{}{0}}
 \headcommand {\beamer@framepages {8}{8}}
-\headcommand {\slideentry {3}{0}{2}{9/9}{}{0}}
+\headcommand {\beamer@subsectionpages {8}{8}}
+\headcommand {\beamer@subsectionentry {0}{3}{1}{9}{$C$ \& $O$}}
+\headcommand {\slideentry {3}{1}{1}{9/9}{$C$ \& $O$}{0}}
 \headcommand {\beamer@framepages {9}{9}}
-\headcommand {\beamer@subsectionpages {8}{9}}
-\headcommand {\beamer@subsectionentry {0}{3}{1}{10}{$C$ \& $O$}}
-\headcommand {\slideentry {3}{1}{1}{10/10}{$C$ \& $O$}{0}}
+\headcommand {\slideentry {3}{1}{2}{10/10}{$C$ \& $O$}{0}}
 \headcommand {\beamer@framepages {10}{10}}
-\headcommand {\slideentry {3}{1}{2}{11/11}{$C$ \& $O$}{0}}
+\headcommand {\beamer@subsectionpages {9}{10}}
+\headcommand {\beamer@subsectionentry {0}{3}{2}{11}{$C$, $O$, $N$ \& $e^{-}$}}
+\headcommand {\slideentry {3}{2}{1}{11/11}{$C$, $O$, $N$ \& $e^{-}$}{0}}
 \headcommand {\beamer@framepages {11}{11}}
-\headcommand {\beamer@subsectionpages {10}{11}}
-\headcommand {\beamer@subsectionentry {0}{3}{2}{12}{$C$, $O$, $N$ \& $e^{-}$}}
-\headcommand {\slideentry {3}{2}{1}{12/12}{$C$, $O$, $N$ \& $e^{-}$}{0}}
+\headcommand {\slideentry {3}{2}{2}{12/12}{$C$, $O$, $N$ \& $e^{-}$}{0}}
 \headcommand {\beamer@framepages {12}{12}}
-\headcommand {\slideentry {3}{2}{2}{13/13}{$C$, $O$, $N$ \& $e^{-}$}{0}}
+\headcommand {\beamer@subsectionpages {11}{12}}
+\headcommand {\beamer@subsectionentry {0}{3}{3}{13}{$C$ \& $O$ vs $C$, $O$, $N$ \& $e^{-}$}}
+\headcommand {\slideentry {3}{3}{1}{13/13}{$C$ \& $O$ vs $C$, $O$, $N$ \& $e^{-}$}{0}}
 \headcommand {\beamer@framepages {13}{13}}
-\headcommand {\beamer@subsectionpages {12}{13}}
-\headcommand {\beamer@subsectionentry {0}{3}{3}{14}{$C$ \& $O$ vs $C$, $O$, $N$ \& $e^{-}$}}
-\headcommand {\slideentry {3}{3}{1}{14/14}{$C$ \& $O$ vs $C$, $O$, $N$ \& $e^{-}$}{0}}
+\headcommand {\beamer@sectionpages {8}{13}}
+\headcommand {\beamer@subsectionpages {13}{13}}
+\headcommand {\sectionentry {4}{References}{14}{References}{0}}
+\headcommand {\slideentry {4}{0}{1}{14/14}{}{0}}
 \headcommand {\beamer@framepages {14}{14}}
-\headcommand {\slideentry {3}{3}{2}{15/19}{$C$ \& $O$ vs $C$, $O$, $N$ \& $e^{-}$}{0}}
-\headcommand {\beamer@framepages {15}{19}}
-\headcommand {\beamer@sectionpages {8}{19}}
-\headcommand {\beamer@subsectionpages {14}{19}}
-\headcommand {\sectionentry {4}{References}{20}{References}{0}}
-\headcommand {\slideentry {4}{0}{1}{20/20}{}{0}}
-\headcommand {\beamer@framepages {20}{20}}
-\headcommand {\slideentry {4}{0}{1}{20/21}{}{0}}
-\headcommand {\beamer@framepages {20}{21}}
-\headcommand {\slideentry {4}{0}{2}{22/22}{}{0}}
-\headcommand {\beamer@framepages {22}{22}}
-\headcommand {\beamer@partpages {1}{22}}
-\headcommand {\beamer@subsectionpages {20}{22}}
-\headcommand {\beamer@sectionpages {20}{22}}
-\headcommand {\beamer@documentpages {22}}
-\headcommand {\gdef \inserttotalframenumber {15}}
+\headcommand {\slideentry {4}{0}{1}{14/15}{}{0}}
+\headcommand {\beamer@framepages {14}{15}}
+\headcommand {\slideentry {4}{0}{2}{16/16}{}{0}}
+\headcommand {\beamer@framepages {16}{16}}
+\headcommand {\beamer@partpages {1}{16}}
+\headcommand {\beamer@subsectionpages {14}{16}}
+\headcommand {\beamer@sectionpages {14}{16}}
+\headcommand {\beamer@documentpages {16}}
+\headcommand {\gdef \inserttotalframenumber {13}}
