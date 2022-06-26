@@ -25,5 +25,6 @@
 <PDataArray type="Float32" Name="Points" NumberOfComponents="3"/>
 </PPoints>
 <Piece Source="grid_output_0_19000.vtu"/>
+<Piece Source="grid_output_1_19000.vtu"/>
 </PUnstructuredGrid>
 </VTKFile>

@@ -18,15 +18,15 @@ variable	Tflow		    equal	137.4				# flow temperature
 
 # setting up flow mean properties
 #variable	N2mass		    equal	4.65E-26		# averaged mixture weight	
-variable	N2diameter	    equal	4.17E-10		# averaged mixture molecule dimension
+variable	N2diameter	    equal	4.64E-10		# averaged mixture molecule dimension
 variable        Rmixt               equal       192.11          # averaged gas constant
 
 # NUMBER OF SIMULATED PARTICLES IN ONE CELL
 variable	NumberSimCell	equal	20	            # number of parcels for every number density
 
 # setting up simulation study values for a proper time/space analysis of the hypersonic flow 
-variable	Nlam		    equal	4				# space 
-variable	Ntau		    equal	4				# time 
+variable	Nlam		    equal	5				# space 
+variable	Ntau		    equal	5				# time 
 
 # setting up domain properties
 variable	L		    equal 	5				# reference length 
@@ -39,11 +39,11 @@ variable	zMax		    equal	0.5				# maximum z of the grid
 				
 # asymptotic condition for simulation -> from 1997 Moss journal
 # flow speed 
-variable        Uflow               equal        7477.3    
+variable        Uflow               equal        7468.6    
 # Knudsen number 
-variable        KnudsenNumber       equal        0.116
+variable        KnudsenNumber       equal        2.65
 # wall temperature and accomodation coefficient
-variable        T_w  		    equal	 675
+variable        T_w  		    equal	 470
 variable        a_w    		    equal 	 1.0
 
 # variables computations
@@ -70,9 +70,9 @@ variable	dt		    equal 	${timeInterval}/${Ntau}
 # simulation space interval -- using post-shock conditions and the engineering/simulation relaxation
 variable	ds 		    equal 	${meanFreePathFS}/${Nlam}
 #SET TO FREESTREAM CONDITION -> if it doesn't satisfy  change it
-variable        NumberTrueCell      equal       ${numberDensity}*${ds}*${ds}*6 #z cell width is just 1 
+variable        NumberTrueCell      equal       ${numberDensity}*${ds}*${ds} #z cell width is just 1 
 # number of simulated particles -- post-shock
-variable        Wp                  equal       ${NumberTrueCell}/${NumberSimCell}
+variable        Wp                  equal       ${NumberTrueCell}/${NumberSimCell}        # *6*30*2
 # getting cell properties
 variable	xNcells		    equal	round((${xMax}-${xMin})/${ds}) 	# x direction	
 variable	yNcells		    equal       round((${yMax}-${yMin})/${ds})	# y direction

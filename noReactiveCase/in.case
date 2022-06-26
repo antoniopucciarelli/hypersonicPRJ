@@ -197,7 +197,7 @@ dump            dumpall  grid   all  1000 ./DUMP/flow_field.* id proc           
 dump             dumpSurf surf   all  1000 ./DUMP/surf_heat_flux.* id & 
                  f_avg_pressure[*] f_avg_shear[*] f_avg_heat_flux[*] f_avg_fdrag[*]
 # stats modify
-stats_style c_stat_drag c_stat_heat_flux
+stats_style step cpu c_stat_drag c_stat_heat_flux
 
 # running case
 run              10000

@@ -1,4 +1,4 @@
-ù# hypersonic reactive flow simulation of a capsule that is entering in the martian atmosphere 
+# hypersonic reactive flow simulation of a capsule that is entering in the martian atmosphere 
 # authors:
 #	antonio pucciarelli
 #	raffaele tirotta
@@ -33,7 +33,7 @@ balance_grid     rcb part
 fix              loadbalance balance 1000 1.1 rcb part
 
 # flow properties and timestep
-global           fnum ${Wp} weight cell radius
+global           fnum ${Wp}  weight cell radius
 timestep         ${dt}
 
 # MIXTURE SETUP 
@@ -102,6 +102,7 @@ fix              avg_mfp            ave/grid        all     1 1 1000 c_mfp[*] av
 
 #threshold for adaptation
 variable	minth            equal		${meanFreePathFS}
+variable 	stmin 		 equal  	${meanFreePathFS}/2
 variable	maxth		 equal		10*${meanFreePathFS}
 
 # grid adaptation 
@@ -111,13 +112,15 @@ fix              adaptgrid          adapt 1000 all refine coarsen value f_avg_mf
 run              3000
 
 # unfixing properties and grid adaptation procedure 
-unfix            adaptgrid
+#unfix            adaptgrid
 
-# adapting the grid near surface
-fix     adaptgrid   adapt   1000 all refine surf all 0.01 # iterate 2          >
+# adapting the grid near the stagnation point
+#region  stagnation sphere 0 0 0 2.7
+#fix              adaptgrid          adapt 1000 all refine coarsen value f_avg_mfp[2] ${stmin} ${maxth} thresh less more region stagnation one
+#fix     adaptgrid   adapt   1000 all refine surf all 0.01 # iterate 2          
 
 # running again with grid adaptation enabled close to the capsule surface
-run     3000
+#run     3000
 
 # disable grid adaptation 
 unfix            avg_nrho
@@ -147,6 +150,7 @@ compute          shear              surf            all     marsAtmo            
 compute          heat_flux          surf            all     marsAtmo                        etot
 compute          fdrag              surf            all     marsAtmo                        fx
 
+
 # averaging in time 
 fix              avg_n              ave/grid        all     10 100 1000 c_n[*]              ave running
 fix              avg_nrho           ave/grid        all     10 100 1000 c_nrho[*]           ave running
@@ -165,6 +169,15 @@ fix              avg_shear          ave/surf        all     10 100 1000 c_shear[
 fix              avg_heat_flux      ave/surf        all     10 100 1000 c_heat_flux[*]      ave running
 fix 		 avg_fdrag	    ave/surf        all     10 100 1000 c_fdrag[*]  	    ave running
 
+#stagnation point id
+group st_pt surf id 1
+
+#averaging in time interesting quantity
+fix              small_heat_flux      ave/surf       st_pt     1 10 100 c_heat_flux[*]      ave running
+fix 		 small_fdrag          ave/surf        all     1 10 100 c_fdrag[*]          ave running
+#compute total drag
+compute		 stat_drag 	reduce 		sum  		f_small_fdrag[*]
+compute 	 stat_heat_flux      reduce 	sum 		f_small_heat_flux[*]
 # RESULTS ALLOCATION AND DEFINITIONS
 # directories generation 
 shell            mkdir GRID
@@ -183,6 +196,8 @@ dump            dumpall  grid   all  1000 ./DUMP/flow_field.* id proc           
 
 dump             dumpSurf surf   all  1000 ./DUMP/surf_heat_flux.* id & 
                  f_avg_pressure[*] f_avg_shear[*] f_avg_heat_flux[*] f_avg_fdrag[*]
+# stats modify
+stats_style step cpu c_stat_drag c_stat_heat_flux
 
 # running case
 run              10000

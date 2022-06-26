@@ -20,75 +20,15 @@
 <PDataArray type="Float64" Name="f_avg_nrho_CO"/>
 <PDataArray type="Float64" Name="f_avg_nrho_O"/>
 <PDataArray type="Float64" Name="f_avg_nrho_C"/>
+<PDataArray type="Float64" Name="f_avg_nrho_N2"/>
+<PDataArray type="Float64" Name="f_avg_nrho_N"/>
+<PDataArray type="Float64" Name="f_avg_nrho_NO"/>
+<PDataArray type="Float64" Name="f_avg_nrho_CN"/>
 </PCellData>
 <PPoints>
 <PDataArray type="Float32" Name="Points" NumberOfComponents="3"/>
 </PPoints>
 <Piece Source="grid_output_0_18000.vtu"/>
 <Piece Source="grid_output_1_18000.vtu"/>
-<Piece Source="grid_output_2_18000.vtu"/>
-<Piece Source="grid_output_3_18000.vtu"/>
-<Piece Source="grid_output_4_18000.vtu"/>
-<Piece Source="grid_output_5_18000.vtu"/>
-<Piece Source="grid_output_6_18000.vtu"/>
-<Piece Source="grid_output_7_18000.vtu"/>
-<Piece Source="grid_output_8_18000.vtu"/>
-<Piece Source="grid_output_9_18000.vtu"/>
-<Piece Source="grid_output_10_18000.vtu"/>
-<Piece Source="grid_output_11_18000.vtu"/>
-<Piece Source="grid_output_12_18000.vtu"/>
-<Piece Source="grid_output_13_18000.vtu"/>
-<Piece Source="grid_output_14_18000.vtu"/>
-<Piece Source="grid_output_15_18000.vtu"/>
-<Piece Source="grid_output_16_18000.vtu"/>
-<Piece Source="grid_output_17_18000.vtu"/>
-<Piece Source="grid_output_18_18000.vtu"/>
-<Piece Source="grid_output_19_18000.vtu"/>
-<Piece Source="grid_output_20_18000.vtu"/>
-<Piece Source="grid_output_21_18000.vtu"/>
-<Piece Source="grid_output_22_18000.vtu"/>
-<Piece Source="grid_output_23_18000.vtu"/>
-<Piece Source="grid_output_24_18000.vtu"/>
-<Piece Source="grid_output_25_18000.vtu"/>
-<Piece Source="grid_output_26_18000.vtu"/>
-<Piece Source="grid_output_27_18000.vtu"/>
-<Piece Source="grid_output_28_18000.vtu"/>
-<Piece Source="grid_output_29_18000.vtu"/>
-<Piece Source="grid_output_30_18000.vtu"/>
-<Piece Source="grid_output_31_18000.vtu"/>
-<Piece Source="grid_output_32_18000.vtu"/>
-<Piece Source="grid_output_33_18000.vtu"/>
-<Piece Source="grid_output_34_18000.vtu"/>
-<Piece Source="grid_output_35_18000.vtu"/>
-<Piece Source="grid_output_36_18000.vtu"/>
-<Piece Source="grid_output_37_18000.vtu"/>
-<Piece Source="grid_output_38_18000.vtu"/>
-<Piece Source="grid_output_39_18000.vtu"/>
-<Piece Source="grid_output_40_18000.vtu"/>
-<Piece Source="grid_output_41_18000.vtu"/>
-<Piece Source="grid_output_42_18000.vtu"/>
-<Piece Source="grid_output_43_18000.vtu"/>
-<Piece Source="grid_output_44_18000.vtu"/>
-<Piece Source="grid_output_45_18000.vtu"/>
-<Piece Source="grid_output_46_18000.vtu"/>
-<Piece Source="grid_output_47_18000.vtu"/>
-<Piece Source="grid_output_48_18000.vtu"/>
-<Piece Source="grid_output_49_18000.vtu"/>
-<Piece Source="grid_output_50_18000.vtu"/>
-<Piece Source="grid_output_51_18000.vtu"/>
-<Piece Source="grid_output_52_18000.vtu"/>
-<Piece Source="grid_output_53_18000.vtu"/>
-<Piece Source="grid_output_54_18000.vtu"/>
-<Piece Source="grid_output_55_18000.vtu"/>
-<Piece Source="grid_output_56_18000.vtu"/>
-<Piece Source="grid_output_57_18000.vtu"/>
-<Piece Source="grid_output_58_18000.vtu"/>
-<Piece Source="grid_output_59_18000.vtu"/>
-<Piece Source="grid_output_60_18000.vtu"/>
-<Piece Source="grid_output_61_18000.vtu"/>
-<Piece Source="grid_output_62_18000.vtu"/>
-<Piece Source="grid_output_63_18000.vtu"/>
-<Piece Source="grid_output_64_18000.vtu"/>
-<Piece Source="grid_output_65_18000.vtu"/>
 </PUnstructuredGrid>
 </VTKFile>
